@@ -1,0 +1,23 @@
+<div class="variant" data-price-row>
+  {% for h in vf.hidden_fields %}{{ h }}{% endfor %}
+  {{ vf.non_field_errors }}
+  <div class="variant-grid">
+    {% include "includes/field.html" with field=vf.name %}
+    {% include "includes/field.html" with field=vf.unit %}
+    {% include "includes/field.html" with field=vf.customer_price %}
+    {% include "includes/field.html" with field=vf.supplier_price %}
+    {% include "includes/field.html" with field=vf.vat_rate %}
+    {% include "includes/field.html" with field=vf.min_qty %}
+  </div>
+  <details class="small"><summary>Mehr: Artikelnummer, Bestellschritt, Bestand</summary>
+    <div class="variant-grid mt-s">
+      {% include "includes/field.html" with field=vf.sku %}
+      {% include "includes/field.html" with field=vf.qty_step %}
+      {% include "includes/field.html" with field=vf.stock %}
+    </div>
+  </details>
+  <div class="row small">
+    {% include "includes/field.html" with field=vf.is_active %}
+    {% if vf.DELETE %}{% include "includes/field.html" with field=vf.DELETE %}{% endif %}
+  </div>
+</div>

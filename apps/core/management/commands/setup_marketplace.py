@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
+from apps.catalog.defaults import seed_catalog_defaults
 from apps.core.models import Tenant
 from apps.operator.models import MarketplaceSettings
 from apps.orgs.models import Membership, Organization, Role
@@ -24,6 +25,7 @@ class Command(BaseCommand):
             slug=opts["slug"], defaults={"name": opts["name"], "domain": opts["domain"]}
         )
         MarketplaceSettings.for_tenant(tenant)
+        seed_catalog_defaults(tenant)
         operator, _ = Organization.objects.get_or_create(
             tenant=tenant, kind=Organization.Kind.OPERATOR, defaults={"name": opts["name"]}
         )

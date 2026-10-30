@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}{{ supplier.name }}{% endblock %}
+{% block content %}
+<p class="small"><a href="{% url 'shop:suppliers' %}">← Alle Lieferanten</a></p>
+<div class="card supplier-head">
+  {% if profile.logo %}<img class="logo" src="{{ profile.logo.url }}" alt="">{% endif %}
+  <div>
+    <h1>{{ supplier.name }}</h1>
+    <p class="muted">{{ profile.zip_code }} {{ profile.city }}{% if profile.canton %} {{ profile.canton }}{% endif %}{% if profile.website %} · <a href="{{ profile.website }}" rel="noopener nofollow" target="_blank">Webseite</a>{% endif %}</p>
+    {% if profile.description %}<p>{{ profile.description|linebreaksbr }}</p>{% endif %}
+    {% if profile.opening_hours %}<p class="small"><strong>Abholzeiten:</strong> {{ profile.opening_hours|linebreaksbr }}</p>{% endif %}
+  </div>
+</div>
+<h2 class="mt">Sortiment</h2>
+{% include "shop/partials/filters.html" %}
+<div id="results" aria-live="polite">{% include "shop/partials/results.html" %}</div>
+{% endblock %}

@@ -17,7 +17,10 @@ urlpatterns = [
     path("konto/", include("apps.accounts.urls")),
     path("team/", include("apps.orgs.urls")),
     path("betreiber/", include("apps.operator.urls")),
+    path("lieferant/artikel/", include("apps.catalog.urls")),
     path("lieferant/", include("apps.suppliers.urls")),
+    path("betreiber/katalog/", include("apps.catalog.operator_urls")),
+    path("shop/", include("apps.shop.urls")),
     path("kunde/", include("apps.customers.urls")),
     path("system/", admin.site.urls),
 ]

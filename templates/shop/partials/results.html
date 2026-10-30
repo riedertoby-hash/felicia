@@ -1,0 +1,7 @@
+<p class="small muted">{{ page.paginator.count }} Artikel{% if active.q %} für «{{ active.q }}»{% endif %}</p>
+<div class="products">
+  {% for p in page %}{% include "shop/partials/product_card.html" %}{% empty %}
+  <div class="card"><p>Keine Artikel gefunden.</p>{% if active.q %}<p class="muted small">Tipp: kürzeren Suchbegriff versuchen oder Filter zurücksetzen.</p>{% endif %}</div>
+  {% endfor %}
+</div>
+{% include "includes/pagination.html" %}

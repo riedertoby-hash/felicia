@@ -11,6 +11,10 @@
     <ul class="checklist">{% for label, done in checklist %}<li class="{{ done|yesno:'done,todo' }}">{{ label }}</li>{% endfor %}</ul>
     {% if "org.edit" in org_perms %}<div class="actions"><a class="btn secondary" href="{% url 'suppliers:profile' %}">Profil bearbeiten</a></div>{% endif %}
   </div>
+  <a class="card link" href="{% url 'catalog:list' %}">
+    <h2>Artikel</h2>
+    <p class="stat">{{ product_count }}</p><p class="muted small">{{ active_count }} davon im Shop sichtbar</p>
+  </a>
   <div class="card">
     <h2>Ihre Konditionen</h2>
     <p>Provision des Marktplatzes: <strong>{{ commission|floatformat:"-2" }} %</strong> vom Kundenpreis</p>

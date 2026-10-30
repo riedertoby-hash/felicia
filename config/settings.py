@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.humanize",
+    "django.contrib.postgres",
     "allauth",
     "allauth.account",
     "allauth.mfa",
@@ -60,6 +61,8 @@ INSTALLED_APPS = [
     "apps.operator",
     "apps.suppliers",
     "apps.customers",
+    "apps.catalog",
+    "apps.shop",
 ]
 
 MIDDLEWARE = [
@@ -200,8 +203,9 @@ CONTENT_SECURITY_POLICY = {
 
 # --- I18N ----------------------------------------------------------------
 LANGUAGE_CODE = "de-ch"
-LANGUAGES = [("de", "Deutsch")]
+LANGUAGES = [("de-ch", "Deutsch")]
 TIME_ZONE = "Europe/Zurich"
+FORMAT_MODULE_PATH = ["config.formats"]
 USE_I18N = True
 USE_TZ = True
 

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}CSV-Import{% endblock %}
+{% block content %}
+<h1>Artikel per CSV importieren</h1>
+<div class="grid">
+  <form method="post" enctype="multipart/form-data" novalidate class="card">{% csrf_token %}
+    <ol class="small">
+      <li><a href="{% url 'catalog:csv_template' %}">Vorlage herunterladen</a> und in Excel ausfüllen.</li>
+      <li>Als CSV speichern und hier hochladen.</li>
+      <li>Vorschau prüfen, dann importieren. Erst dann wird gespeichert.</li>
+    </ol>
+    {% include "includes/form_fields.html" %}
+    <button type="submit">Prüfen</button>
+  </form>
+  <div class="card small">
+    <h2>Spalten</h2>
+    <p><strong>Pflicht:</strong> artikel, variante, kundenpreis, kategorie</p>
+    <p><strong>Optional:</strong> einheit, mwst (2.6 / 8.1 / 0), mindestmenge, temperatur (ungekühlt / gekühlt / tiefgekühlt), haltbarkeit_tage, vorlaufzeit_tage, herkunft, artikelnummer, beschreibung</p>
+    <p class="muted">Bestehende Artikel werden über die Artikelnummer erkannt, sonst über Artikel + Variante, und aktualisiert.</p>
+  </div>
+</div>
+{% endblock %}

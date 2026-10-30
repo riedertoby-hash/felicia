@@ -1,0 +1,21 @@
+<form id="shop-filters" class="shop-filters" method="get" hx-get="{{ request.path }}" hx-target="#results" hx-push-url="true" hx-trigger="change, input from:#q delay:250ms, submit">
+  <label class="sr-only" for="q">Suche</label>
+  <input id="q" type="search" name="q" value="{{ active.q }}" placeholder="Was suchen Sie? z.B. Kartoffeln, Bergkäse …" autocomplete="off" {% if not supplier %}autofocus{% endif %}>
+  <details class="filter-more" data-open-desktop open><summary>Filter &amp; Sortierung</summary>
+  <div class="filter-row">
+    {% if categories %}<select name="kategorie" aria-label="Kategorie"><option value="">Alle Kategorien</option>
+      {% for c in categories %}<option value="{{ c.pk }}" {% if active.kategorie == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>
+        {% for ch in c.children.all %}<option value="{{ ch.pk }}" {% if active.kategorie == ch.pk|stringformat:"s" %}selected{% endif %}>&nbsp;&nbsp;{{ ch.name }}</option>{% endfor %}{% endfor %}
+    </select>{% endif %}
+    {% if suppliers %}<select name="lieferant" aria-label="Lieferant"><option value="">Alle Lieferanten</option>
+      {% for s in suppliers %}<option value="{{ s.pk }}" {% if active.lieferant == s.pk|stringformat:"s" %}selected{% endif %}>{{ s.name }}</option>{% endfor %}
+    </select>{% endif %}
+    {% if temperatures %}<select name="temperatur" aria-label="Temperatur"><option value="">Alle Temperaturen</option>
+      {% for v, l in temperatures %}<option value="{{ v }}" {% if active.temperatur == v %}selected{% endif %}>{{ l }}</option>{% endfor %}
+    </select>{% endif %}
+    <select name="sort" aria-label="Sortierung">{% for v, l in sorts.items %}<option value="{{ v }}" {% if active.sort == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+  </div>
+  {% if labels %}<div class="chips">{% for l in labels %}<label class="chip"><input type="checkbox" name="label" value="{{ l.pk }}" {% if l.pk|stringformat:"s" in active.labels %}checked{% endif %}> {{ l.name }}</label>{% endfor %}</div>{% endif %}
+  </details>
+  <noscript><button type="submit">Suchen</button></noscript>
+</form>

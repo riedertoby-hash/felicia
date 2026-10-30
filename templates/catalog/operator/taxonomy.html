@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Kategorien &amp; Labels{% endblock %}
+{% block content %}
+<h1>Kategorien &amp; Labels</h1>
+<p class="muted small">Diese Struktur gilt für den ganzen Shop. Lieferanten wählen daraus aus.</p>
+<div class="grid two">
+  <div class="card">
+    <div class="spread"><h2>Kategorien</h2><a class="btn secondary" href="{% url 'catalog_admin:category_new' %}">Neue Kategorie</a></div>
+    <ul class="tree">
+    {% for c in categories %}
+      <li><a href="{% url 'catalog_admin:category_edit' c.pk %}">{{ c.name }}</a> <span class="muted small">{{ c.product_count }} Artikel</span>
+        {% if c.children.all %}<ul>{% for ch in c.children.all %}<li><a href="{% url 'catalog_admin:category_edit' ch.pk %}">{{ ch.name }}</a></li>{% endfor %}</ul>{% endif %}
+      </li>
+    {% endfor %}
+    </ul>
+  </div>
+  <div class="card">
+    <h2>Labels</h2>
+    <ul class="plain">{% for l in labels %}
+      <li class="spread"><span>{{ l.name }} <span class="muted small">{{ l.product_count }} Artikel</span></span>
+        <form method="post" action="{% url 'catalog_admin:label_delete' l.pk %}" data-confirm="Label «{{ l.name }}» entfernen? Es verschwindet bei allen Artikeln.">{% csrf_token %}<button type="submit" class="ghost small">Entfernen</button></form></li>
+    {% endfor %}</ul>
+    <form method="post" action="{% url 'catalog_admin:label_add' %}" class="row mt">{% csrf_token %}
+      <label class="sr-only" for="id_name">Neues Label</label>{{ label_form.name }}<button type="submit" class="secondary">Hinzufügen</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

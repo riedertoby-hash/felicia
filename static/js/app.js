@@ -32,3 +32,47 @@ function applyConditions(root) {
 }
 document.addEventListener("DOMContentLoaded", () => applyConditions(document));
 document.addEventListener("change", () => applyConditions(document));
+
+// Price calculator: customer price <-> what the supplier receives (commission from the form).
+const round05 = (x) => (Math.round(x * 20) / 20).toFixed(2);
+const round01 = (x) => (Math.round(x * 100) / 100).toFixed(2);
+document.addEventListener("input", (e) => {
+  const input = e.target.closest("[data-price]");
+  const row = input && input.closest("[data-price-row]");
+  const form = input && input.form;
+  if (!row || !form || !form.dataset.commission) return;
+  const share = 1 - parseFloat(form.dataset.commission) / 100;
+  const customer = row.querySelector('[data-price="customer"]');
+  const supplier = row.querySelector('[data-price="supplier"]');
+  const basis = row.querySelector('[data-price="basis"]');
+  const value = parseFloat(String(input.value).replace(",", "."));
+  if (input === customer) {
+    basis.value = "customer";
+    supplier.value = isNaN(value) ? "" : round01(value * share);
+  } else if (input === supplier) {
+    basis.value = "supplier";
+    customer.value = isNaN(value) ? "" : round05(value / share);
+  }
+});
+
+// Inline formsets: <template id="variant-template"> + [data-add-variant]
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-add-variant]");
+  if (!btn) return;
+  const tpl = document.getElementById("variant-template");
+  const total = document.querySelector('input[name$="-TOTAL_FORMS"]');
+  const index = parseInt(total.value, 10);
+  const html = tpl.innerHTML.replace(/__prefix__/g, String(index));
+  document.getElementById("variants").insertAdjacentHTML("beforeend", html);
+  total.value = String(index + 1);
+  applyConditions(document);
+});
+
+// Shop filters start collapsed on small screens.
+document.addEventListener("DOMContentLoaded", () => {
+  if (window.matchMedia("(max-width: 760px)").matches) {
+    document.querySelectorAll("[data-open-desktop]").forEach((d) => {
+      if (!d.querySelector("select option[selected]:not([value=''])") && !d.querySelector("input:checked")) d.open = false;
+    });
+  }
+});

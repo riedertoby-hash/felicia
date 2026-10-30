@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }}{% endblock %}
+{% block content %}
+<p class="small"><a href="{% url 'shop:index' %}">← Shop</a>{% if product.category %} · {{ product.category }}{% endif %}</p>
+<div class="product-detail">
+  <div class="product-img large">{% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }}">{% else %}<span class="noimg">{{ product.name|slice:":1" }}</span>{% endif %}</div>
+  <div class="stack">
+    <div>
+      <h1>{{ product.name }}</h1>
+      <p>von <a href="{% url 'shop:supplier' product.supplier_id %}">{{ product.supplier.name }}</a>{% if product.origin %} · Herkunft: {{ product.origin }}{% endif %}</p>
+      <div class="tags">
+        <span class="badge temp-{{ product.temperature }}">{{ product.get_temperature_display }}</span>
+        {% for l in product.labels.all %}<span class="badge ok">{{ l.name }}</span>{% endfor %}
+      </div>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Variante</th><th>Preis</th><th>Mindestmenge</th></tr></thead>
+      <tbody>{% for v in product.variants.all %}
+        <tr><td>{{ v.name }}{% if v.sold_out %} <span class="badge blocked">ausverkauft</span>{% endif %}</td><td><strong>CHF {{ v.customer_price }}</strong> <span class="small muted">/ {{ v.unit }}, {{ v.vat_label }}</span></td><td>{{ v.min_qty|floatformat:"-2" }} {{ v.unit }}</td></tr>
+      {% endfor %}</tbody>
+    </table></div>
+    <dl class="facts">
+      <dt>Bestellen</dt><dd>bis {{ product.lead_time_days }} Tag{{ product.lead_time_days|pluralize:"e" }} vor Lieferung</dd>
+      {% if product.shelf_life_days %}<dt>Haltbarkeit</dt><dd>mind. {{ product.shelf_life_days }} Tage ab Lieferung</dd>{% endif %}
+      {% if product.season_label %}<dt>Saison</dt><dd>{{ product.season_label }}{% if not product.in_season %} <span class="badge pending">zurzeit nicht verfügbar</span>{% endif %}</dd>{% endif %}
+      {% if product.allergens %}<dt>Allergene</dt><dd>{{ product.allergen_labels|join:", " }}</dd>{% endif %}
+    </dl>
+    {% if product.description %}<p>{{ product.description|linebreaksbr }}</p>{% endif %}
+    <p class="small muted">Bestellen ist ab der nächsten Etappe möglich.</p>
+  </div>
+</div>
+{% if more %}
+<h2 class="mt">Mehr von {{ product.supplier.name }}</h2>
+<div class="products">{% for p in more %}{% include "shop/partials/product_card.html" %}{% endfor %}</div>
+{% endif %}
+{% endblock %}

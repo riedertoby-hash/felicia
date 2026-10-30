@@ -25,6 +25,8 @@ def dashboard(request):
             "checklist": profile.completeness(),
             "commission": terms.effective_commission() if terms else None,
             "base_fee": terms.effective_base_fee() if terms else None,
+            "product_count": request.org.products.count(),
+            "active_count": request.org.products.filter(is_active=True).count(),
         },
     )
 

@@ -66,6 +66,10 @@ ACTION_LABELS = {
     "invite.accepted": "Einladung angenommen",
     "invite.revoked": "Einladung zurückgezogen",
     "settings.updated": "Marktplatz-Einstellungen geändert",
+    "catalog.created": "Artikel erfasst",
+    "catalog.updated": "Artikel geändert",
+    "catalog.deleted": "Artikel gelöscht",
+    "catalog.imported": "Artikel importiert (CSV)",
     "address.saved": "Adresse gespeichert",
     "address.deleted": "Adresse gelöscht",
 }
