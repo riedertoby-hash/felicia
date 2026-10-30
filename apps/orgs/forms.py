@@ -3,7 +3,6 @@ from django.contrib.auth import password_validation
 
 from .models import Role
 
-
 # Pre-selected role when inviting: the everyday role, never the owner.
 DEFAULT_INVITE_ROLE = {"operator": "operator_staff", "supplier": "supplier_clerk", "customer": "customer_buyer"}
 
