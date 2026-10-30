@@ -1,3 +1,5 @@
+from datetime import time
+
 from django.db import models
 
 from apps.core.fields import EncryptedCharField
@@ -46,10 +48,11 @@ class SupplierProfile(TimeStampedModel):
     # Benachrichtigung
     notify_channel = models.CharField("Kanal", max_length=16, choices=Channel.choices, default=Channel.EMAIL)
     notify_mode = models.CharField("Zeitpunkt", max_length=16, choices=Mode.choices, default=Mode.IMMEDIATE)
-    notify_digest_time = models.TimeField("Zusammenzug um", default="17:00")
+    notify_digest_time = models.TimeField("Zusammenzug um", default=time(17, 0))
     notify_email = models.EmailField("E-Mail für Bestellungen", blank=True, help_text="Leer = Kontakt-E-Mail")
     notify_phone = models.CharField("Handy für SMS", max_length=30, blank=True)
     webhook_url = models.URLField("Webhook-Adresse", blank=True)
+    last_digest_on = models.DateField(null=True, blank=True, editable=False)
 
     class Meta:
         verbose_name = "Lieferanten-Profil"

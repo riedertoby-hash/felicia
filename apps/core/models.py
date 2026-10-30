@@ -33,3 +33,23 @@ class TenantModel(TimeStampedModel):
 
     class Meta:
         abstract = True
+
+
+class Sequence(models.Model):
+    """Gap-free counters for order and invoice numbers (row-locked while incrementing)."""
+
+    key = models.CharField(max_length=80, unique=True)
+    value = models.PositiveBigIntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.key}={self.value}"
+
+    @classmethod
+    def next(cls, key):
+        from django.db import transaction
+
+        with transaction.atomic():
+            obj, _ = cls.objects.select_for_update().get_or_create(key=key)
+            obj.value += 1
+            obj.save(update_fields=["value"])
+            return obj.value

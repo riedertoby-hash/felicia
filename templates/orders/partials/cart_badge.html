@@ -1,0 +1,1 @@
+<a id="cart-badge" class="cart-link" href="{% url 'orders:cart' %}" hx-swap-oob="true">Warenkorb{% if cart_count %} <span class="count">{{ cart_count }}</span>{% endif %}</a>

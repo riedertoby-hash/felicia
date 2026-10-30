@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Tagesübersicht{% endblock %}
+{% block content %}
+<div class="spread">
+  <h1>{{ day|date:"l, j. F Y" }}</h1>
+  <div class="row"><a class="btn ghost" href="{% url 'supplier_orders:day' prev|date:'Y-m-d' %}">← Vortag</a><form method="get" action="{% url 'supplier_orders:today' %}" class="row"><input type="date" name="datum" value="{{ day|date:'Y-m-d' }}" aria-label="Datum" data-autosubmit></form><a class="btn ghost" href="{% url 'supplier_orders:day' next|date:'Y-m-d' %}">Folgetag →</a></div>
+</div>
+<p class="muted">{{ orders|length }} Bestellung{{ orders|length|pluralize:"en" }} · CHF {{ total }}</p>
+{% if orders %}
+<div class="actions"><a class="btn" href="{% url 'supplier_orders:picking_pdf' day|date:'Y-m-d' %}" target="_blank">Kommissionierliste (PDF)</a><a class="btn secondary" href="{% url 'supplier_orders:delivery_notes_pdf' day|date:'Y-m-d' %}" target="_blank">Alle Lieferscheine (PDF)</a></div>
+<div class="grid two mt">
+  <div class="card"><h2>Kommissionierliste</h2>
+    {% for temp, rows in picking.items %}<h3 class="mt-s">{{ temp }}</h3><table class="compact"><tbody>{% for r in rows %}<tr><td><strong>{{ r.quantity|floatformat:"-2" }} {{ r.unit }}</strong></td><td>{{ r.product }} <span class="muted small">{{ r.variant }}</span></td><td class="small muted">{{ r.orders }}×</td></tr>{% endfor %}</tbody></table>{% endfor %}
+  </div>
+  <div class="card"><h2>Bestellungen</h2>
+    <ul class="plain">{% for o in orders %}<li class="spread"><span><a href="{% url 'supplier_orders:detail' o.pk %}">{{ o.number }}</a> · {{ o.customer.name }}<br><span class="small muted">{{ o.delivery_name }}{% if not o.is_pickup %} · {{ o.ship_zip }} {{ o.ship_city }}{% endif %}</span></span><span class="badge st-{{ o.status }}">{{ o.get_status_display }}</span></li>{% endfor %}</ul>
+  </div>
+</div>
+{% else %}<div class="card"><p class="muted">Keine Bestellungen für diesen Tag.</p></div>{% endif %}
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}{{ order.number }}{% endblock %}
+{% block content %}
+<div class="spread"><h1>Bestellung {{ order.number }} <span class="badge st-{{ order.status }}">{{ order.get_status_display }}</span></h1><a class="small" href="{% url 'orders:list' %}">← Alle Bestellungen</a></div>
+<div class="grid">
+  <div class="card"><h2>{{ order.supplier.name }}</h2><p>{{ order.delivery_name }}<br><strong>{{ order.delivery_date|date:"l, j. F Y" }}</strong></p>
+    {% if not order.is_pickup %}<p class="small">{{ order.ship_name }}<br>{{ order.ship_street }}<br>{{ order.ship_zip }} {{ order.ship_city }}</p>{% endif %}</div>
+  <div class="card"><h2>Rechnung</h2>{% if order.invoice %}<p><a href="{% url 'billing:customer_invoice' order.invoice.pk %}">Rechnung {{ order.invoice.number }}</a> – {{ order.invoice.get_status_display }}</p>{% else %}<p class="muted">Folgt durch den Lieferanten.</p>{% endif %}
+    <a class="btn secondary" href="{% url 'orders:delivery_note' order.pk %}" target="_blank">Lieferschein (PDF)</a></div>
+</div>
+{% include "orders/partials/lines.html" %}
+<form method="post" action="{% url 'orders:reorder' order.pk %}" class="mt">{% csrf_token %}<button type="submit">Nochmals bestellen</button></form>
+{% endblock %}

@@ -3,6 +3,7 @@ from decimal import Decimal
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
+from apps.core.fields import EncryptedCharField
 from apps.core.models import TimeStampedModel
 from apps.orgs.permissions import DEFAULT_MFA_REQUIRED_ROLES
 
@@ -34,6 +35,20 @@ class MarketplaceSettings(TimeStampedModel):
     )
     supplier_approval_required = models.BooleanField("Neue Lieferanten müssen freigeschaltet werden", default=True)
     mfa_required_roles = models.JSONField("2FA-Pflicht für Rollen", default=default_mfa_roles, blank=True)
+    # Issuer data for commission invoices to suppliers
+    legal_name = models.CharField("Firmenname", max_length=200, blank=True)
+    street = models.CharField("Strasse und Nr.", max_length=200, blank=True)
+    zip_code = models.CharField("PLZ", max_length=4, blank=True)
+    city = models.CharField("Ort", max_length=100, blank=True)
+    iban = EncryptedCharField("IBAN", blank=True)
+    vat_registered = models.BooleanField("MWST-pflichtig", default=False)
+    vat_number = models.CharField("MWST-Nummer", max_length=20, blank=True)
+    commission_period = models.CharField(
+        "Provisionsrechnung",
+        max_length=16,
+        default="monthly",
+        choices=[("monthly", "Monatlich"), ("quarterly", "Quartalsweise")],
+    )
 
     class Meta:
         verbose_name = "Marktplatz-Einstellungen"

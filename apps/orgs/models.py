@@ -39,9 +39,7 @@ class Organization(TenantModel):
     @property
     def dashboard_url(self):
         return reverse(
-            {"operator": "operator:dashboard", "supplier": "suppliers:dashboard", "customer": "customers:dashboard"}[
-                self.kind
-            ]
+            {"operator": "operator:dashboard", "supplier": "suppliers:dashboard", "customer": "shop:index"}[self.kind]
         )
 
     @property

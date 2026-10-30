@@ -244,3 +244,33 @@ tr.row-error td { background: var(--danger-soft); }
 .product-img, .product-img:hover { text-decoration: none; }
 .filter-more > summary { font-size: .9rem; color: var(--muted); margin-top: 8px; }
 @media (min-width: 761px) { .filter-more > summary { display: none; } }
+
+/* Orders & billing */
+.cart-link { font-weight: 600; text-decoration: none; }
+.cart-link .count, .tabs .count { display: inline-block; min-width: 20px; padding: 0 6px; border-radius: 999px;
+  background: var(--brand); color: var(--brand-ink); font-size: .8rem; text-align: center; }
+.add-form { display: flex; gap: 6px; align-items: center; margin: 0; }
+.add-form input[type=number] { width: 80px; min-height: 36px; padding: 4px 8px; }
+.add-form button { min-height: 36px; padding: 4px 12px; font-size: .9rem; }
+.card-add { border-top: 0 !important; padding-top: 8px !important; }
+.add-msg { display: block; margin-top: 4px; }
+.add-msg.ok { color: var(--brand); }
+.add-msg.error, .error-text { color: var(--danger); }
+.qty-form input[type=number] { width: 90px; min-height: 36px; padding: 4px 8px; }
+.right { text-align: right; }
+.tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+.tabs a { padding: 6px 12px; border-radius: 999px; text-decoration: none; color: var(--muted); border: 1px solid var(--line); background: var(--surface); }
+.tabs a.active { color: var(--brand); border-color: var(--brand); background: var(--brand-soft); font-weight: 600; }
+.day-strip { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.day-strip .card { padding: 12px; }
+table.compact td { padding: 4px 6px; }
+.badge.st-new { background: var(--warn-soft); color: var(--warn); }
+.badge.st-confirmed, .badge.st-packed { background: #e3f0fb; color: #1d5a8a; }
+.badge.st-delivered, .badge.inv-paid { background: var(--ok-soft); color: var(--brand); }
+.badge.st-cancelled, .badge.inv-cancelled { background: var(--line); color: var(--muted); }
+.badge.inv-open { background: var(--warn-soft); color: var(--warn); }
+.small.btn, button.small { min-height: 32px; padding: 4px 10px; font-size: .85rem; }
+tr.group-row td { background: var(--bg); }
+.choices label span { display: block; }
+.qty-form { flex-wrap: nowrap; }
+.qty-form input[type=number] { width: 90px !important; flex: 0 0 90px; }

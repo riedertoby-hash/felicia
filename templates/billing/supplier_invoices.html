@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Rechnungen{% endblock %}
+{% block content %}
+<div class="spread"><h1>Rechnungen</h1>{% if can_manage %}<a class="btn secondary" href="{% url 'billing:supplier_settings' %}">Einstellungen</a>{% endif %}</div>
+<div class="grid">
+  <div class="card"><div class="muted small">Offen</div><div class="stat">CHF {{ open_total }}</div></div>
+  <div class="card"><div class="muted small">Davon überfällig</div><div class="stat">CHF {{ overdue_total }}</div></div>
+</div>
+{% if pending %}
+<div class="card mt">
+  <h2>Geliefert, noch nicht verrechnet</h2>
+  <p class="small muted">Wird gemäss Ihren Einstellungen automatisch verrechnet. Sie können jederzeit sofort eine Rechnung erstellen.</p>
+  <ul class="plain">{% for p in pending %}<li class="spread"><span>{{ p.customer__name }} · {{ p.n }} Bestellung{{ p.n|pluralize:"en" }} · CHF {{ p.total }}</span>
+    {% if can_manage %}<form method="post" action="{% url 'billing:create_invoice' p.customer__pk %}" data-confirm="Rechnung an {{ p.customer__name }} über CHF {{ p.total }} jetzt erstellen und senden?">{% csrf_token %}<button type="submit" class="small">Jetzt verrechnen</button></form>{% endif %}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+<h2 class="mt">Ihre Rechnungen an Kunden</h2>
+{% include "billing/partials/status_tabs.html" %}
+{% include "billing/partials/invoice_rows.html" with party_label="Kunde" detail_url="billing:supplier_invoice" %}
+{% if received %}
+<h2 class="mt">Provisionsrechnungen des Marktplatzes</h2>
+<div class="table-wrap"><table><tbody>{% for inv in received %}<tr><td>{{ inv.number }}</td><td>{{ inv.period_start|date:"m.Y" }}{% if inv.period_end|date:"m" != inv.period_start|date:"m" %}–{{ inv.period_end|date:"m.Y" }}{% endif %}</td><td>CHF {{ inv.total }}</td><td><span class="badge inv-{{ inv.status }}">{{ inv.get_status_display }}</span></td><td><a class="btn ghost small" href="{% url 'billing:pdf' inv.pk %}" target="_blank">PDF</a></td></tr>{% endfor %}</tbody></table></div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,9 @@
+{% if "shop.order" in org_perms and current_org.kind == "customer" %}
+<form class="add-form" method="post" action="{% url 'orders:add' v.pk %}" hx-post="{% url 'orders:add' v.pk %}" hx-target="next .add-slot" hx-swap="innerHTML">{% csrf_token %}
+  <input type="hidden" name="next" value="{{ request.get_full_path }}">
+  <label class="sr-only" for="q-{{ v.pk }}">Menge {{ v.name }}</label>
+  <input id="q-{{ v.pk }}" type="number" name="quantity" value="{{ v.min_qty|floatformat:'-2' }}" min="{{ v.min_qty|floatformat:'-2' }}" step="{{ v.qty_step|floatformat:'-2' }}" inputmode="decimal">
+  <button type="submit" {% if v.sold_out %}disabled{% endif %}>{% if v.sold_out %}Ausverkauft{% else %}In den Warenkorb{% endif %}</button>
+</form>
+<div class="add-slot small"></div>
+{% endif %}

@@ -159,3 +159,20 @@ def audit(request):
         "operator/audit.html",
         {"page": page, "action": action, "q": q, "actions": sorted(ACTION_LABELS.items(), key=lambda x: x[1])},
     )
+
+
+@org_required("platform.suppliers.view", kind=KIND)
+def orders(request):
+    from apps.orders.models import Order
+
+    qs = Order.objects.filter(tenant=request.tenant).select_related("customer", "supplier")
+    q = request.GET.get("q", "").strip()
+    if q:
+        qs = qs.filter(Q(number__icontains=q) | Q(customer__name__icontains=q) | Q(supplier__name__icontains=q))
+    status = request.GET.get("status", "")
+    if status in Order.Status.values:
+        qs = qs.filter(status=status)
+    page = Paginator(qs, 50).get_page(request.GET.get("page"))
+    return render(
+        request, "operator/orders.html", {"page": page, "q": q, "status": status, "statuses": Order.Status.choices}
+    )

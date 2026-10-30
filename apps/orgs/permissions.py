@@ -6,6 +6,7 @@ PERMISSIONS = {
     "org.edit": "Profil bearbeiten",
     "team.manage": "Benutzer einladen und Rollen vergeben",
     "finance.view": "Umsätze, Rechnungen und Auszahlungen einsehen",
+    "finance.manage": "Rechnungen erstellen, als bezahlt markieren, stornieren",
     # supplier
     "org.bank": "Bankverbindung verwalten",
     "catalog.view": "Artikel ansehen",
@@ -32,6 +33,7 @@ _SUPPLIER_ALL = [
     "org.bank",
     "team.manage",
     "finance.view",
+    "finance.manage",
     "catalog.view",
     "catalog.edit",
     "prices.edit",
@@ -52,6 +54,7 @@ DEFAULT_ROLES = [
             "org.edit",
             "team.manage",
             "finance.view",
+            "finance.manage",
             "platform.suppliers.view",
             "platform.suppliers.manage",
             "platform.customers.view",

@@ -10,6 +10,10 @@ setup:
 	.venv/bin/python manage.py setup_marketplace --admin-email admin@example.ch --admin-password 'Tomaten-Feld-2026!'
 	.venv/bin/python manage.py seed_demo
 
+jobs:
+	.venv/bin/python manage.py run_billing
+	.venv/bin/python manage.py send_order_digests
+
 run:
 	.venv/bin/python manage.py runserver
 

@@ -14,6 +14,7 @@
     {% for a in addresses %}<p class="small"><strong>{{ a.label }}</strong>{% if a.is_default %} <span class="badge ok">Standard</span>{% endif %}<br>{{ a.street }}, {{ a.zip_code }} {{ a.city }}</p>{% empty %}<p class="muted">Noch keine Lieferadresse.</p>{% endfor %}
     {% if "customer.addresses" in org_perms %}<a class="btn secondary" href="{% url 'customers:addresses' %}">Verwalten</a>{% endif %}
   </div>
-  <a class="card link" href="{% url 'shop:index' %}"><h2>Shop</h2><p class="muted">Artikel suchen und Lieferanten entdecken.</p></a>
+  {% if "shop.order" in org_perms %}<a class="card link" href="{% url 'orders:list' %}"><h2>Bestellungen</h2><p class="muted">Historie ansehen und mit einem Klick nachbestellen.</p></a>{% endif %}
+<a class="card link" href="{% url 'shop:index' %}"><h2>Shop</h2><p class="muted">Artikel suchen und Lieferanten entdecken.</p></a>
 </div>
 {% endblock %}

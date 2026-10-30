@@ -37,4 +37,8 @@ class ProfileForm(forms.ModelForm):
 class AddressForm(forms.ModelForm):
     class Meta:
         model = Address
-        fields = ["label", "recipient", "street", "zip_code", "city", "delivery_notes", "is_default"]
+        fields = ["label", "recipient", "street", "zip_code", "city", "canton", "delivery_notes", "is_default"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["canton"].required = True

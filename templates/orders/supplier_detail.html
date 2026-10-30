@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}{{ order.number }}{% endblock %}
+{% block content %}
+<div class="spread"><h1>{{ order.number }} <span class="badge st-{{ order.status }}">{{ order.get_status_display }}</span></h1><a class="small" href="{% url 'supplier_orders:list' %}">← Bestellungen</a></div>
+{% if can_manage %}
+<div class="actions">
+  {% if order.next_step %}<form method="post" action="{% url 'supplier_orders:set_status' order.pk %}">{% csrf_token %}<button type="submit" name="status" value="{{ order.next_step.0 }}">{{ order.next_step.1 }}</button></form>{% endif %}
+  {% if order.status == "confirmed" %}<form method="post" action="{% url 'supplier_orders:set_status' order.pk %}">{% csrf_token %}<button type="submit" name="status" value="delivered" class="secondary">Direkt als geliefert markieren</button></form>{% endif %}
+  <a class="btn secondary" href="{% url 'supplier_orders:delivery_note' order.pk %}" target="_blank">Lieferschein (PDF)</a>
+  {% if order.is_open %}<form method="post" action="{% url 'supplier_orders:set_status' order.pk %}" data-confirm="Bestellung {{ order.number }} stornieren? Der Kunde wird informiert.">{% csrf_token %}<button type="submit" name="status" value="cancelled" class="danger">Stornieren</button></form>{% endif %}
+</div>
+{% endif %}
+<div class="grid mt">
+  <div class="card"><h2>{{ order.customer.name }}</h2>
+    {% if order.placed_by %}<p class="small">{{ order.placed_by.get_full_name }} · <a href="mailto:{{ order.placed_by.email }}">{{ order.placed_by.email }}</a></p>{% endif %}
+    <p class="small muted">Bestellt am {{ order.created_at|date:"d.m.Y H:i" }}</p></div>
+  <div class="card"><h2>{{ order.delivery_name }}</h2><p><strong>{{ order.delivery_date|date:"l, j. F Y" }}</strong></p>
+    {% if not order.is_pickup %}<p class="small">{{ order.ship_name }}<br>{{ order.ship_street }}<br>{{ order.ship_zip }} {{ order.ship_city }}{% if order.ship_notes %}<br><em>{{ order.ship_notes }}</em>{% endif %}</p>{% endif %}</div>
+  <div class="card"><h2>Rechnung</h2>{% if order.invoice %}<p><a href="{% url 'billing:supplier_invoice' order.invoice.pk %}">{{ order.invoice.number }}</a> · {{ order.invoice.get_status_display }}</p>{% elif order.status == "delivered" %}<p class="muted small">Wird gemäss Ihren Rechnungseinstellungen verrechnet.</p>{% else %}<p class="muted small">Nach der Lieferung.</p>{% endif %}
+    <p class="small muted">Provision {{ order.commission_percent|floatformat:"-2" }} %: CHF {{ order.commission_amount }}</p></div>
+</div>
+{% include "orders/partials/lines.html" %}
+<form method="post" class="card mt">{% csrf_token %}<label for="supplier_note">Interne Notiz (nur für Ihr Team)</label><textarea id="supplier_note" name="supplier_note" rows="2" {% if not can_manage %}disabled{% endif %}>{{ order.supplier_note }}</textarea>{% if can_manage %}<button type="submit" class="secondary mt-s">Notiz speichern</button>{% endif %}</form>
+{% endblock %}

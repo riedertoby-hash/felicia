@@ -76,3 +76,21 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
+// Checkout: only show dates of the chosen delivery option.
+function syncDates(scope) {
+  scope.querySelectorAll('input[type=radio][name^="option_"]:checked').forEach((radio) => {
+    const select = document.getElementById("date_" + radio.name.slice(7));
+    if (!select) return;
+    let first = null;
+    for (const opt of select.options) {
+      const match = opt.dataset.option === radio.value;
+      opt.hidden = !match;
+      opt.disabled = !match;
+      if (match && !first) first = opt;
+    }
+    if (select.selectedOptions[0] && select.selectedOptions[0].disabled && first) first.selected = true;
+  });
+}
+document.addEventListener("DOMContentLoaded", () => syncDates(document));
+document.addEventListener("change", (e) => { if (e.target.name && e.target.name.startsWith("option_")) syncDates(document); });

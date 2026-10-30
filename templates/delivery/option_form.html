@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Lieferart{% endblock %}
+{% block content %}
+<div class="spread"><h1>{% if option.pk %}{{ option.name }}{% else %}Neue Lieferart{% endif %}</h1><a class="small" href="{% url 'delivery:overview' %}">← Zurück</a></div>
+<form method="post" novalidate class="card w-md">{% csrf_token %}
+  {% include "includes/form_fields.html" %}
+  <button type="submit">Speichern</button>
+</form>
+{% if option.pk %}<form method="post" action="{% url 'delivery:option_delete' option.pk %}" class="mt" data-confirm="Lieferart löschen?">{% csrf_token %}<button type="submit" class="danger">Löschen</button></form>{% endif %}
+{% endblock %}

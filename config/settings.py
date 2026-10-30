@@ -63,6 +63,9 @@ INSTALLED_APPS = [
     "apps.customers",
     "apps.catalog",
     "apps.shop",
+    "apps.delivery",
+    "apps.orders",
+    "apps.billing",
 ]
 
 MIDDLEWARE = [
@@ -97,6 +100,8 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "apps.orgs.context_processors.organization",
+                "apps.orders.context_processors.cart",
+                "apps.core.views.settings_active",
             ],
         },
     },

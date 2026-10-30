@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Bestellungen{% endblock %}
+{% block content %}
+<div class="spread"><h1>Bestellungen</h1>
+  <div class="row"><a class="btn" href="{% url 'supplier_orders:today' %}">Tagesübersicht</a><a class="btn ghost" href="{% url 'supplier_orders:export' %}">Export</a></div></div>
+{% if upcoming %}<div class="day-strip">{% for d in upcoming %}<a class="card link" href="{% url 'supplier_orders:day' d.delivery_date|date:'Y-m-d' %}"><strong>{{ d.delivery_date|date:"D j.n." }}</strong><br><span class="small muted">{{ d.n }} Bestellung{{ d.n|pluralize:"en" }} · CHF {{ d.total }}</span></a>{% endfor %}</div>{% endif %}
+<div class="spread mt">
+  <nav class="tabs" aria-label="Ansicht">
+    <a href="?ansicht=offen" class="{% if view == 'offen' %}active{% endif %}">Offen</a>
+    <a href="?ansicht=neu" class="{% if view == 'neu' %}active{% endif %}">Neu{% if new_count %} <span class="count">{{ new_count }}</span>{% endif %}</a>
+    <a href="?ansicht=alle" class="{% if view == 'alle' %}active{% endif %}">Alle</a>
+  </nav>
+  {% if can_manage and new_count %}<form method="post" action="{% url 'supplier_orders:confirm_all' %}" data-confirm="Alle {{ new_count }} neuen Bestellungen bestätigen?">{% csrf_token %}<button type="submit">Alle neuen bestätigen</button></form>{% endif %}
+</div>
+<form class="filters mt-s" method="get"><input type="hidden" name="ansicht" value="{{ view }}"><input type="search" name="q" value="{{ q }}" placeholder="Nr. oder Kunde" aria-label="Suche"><button type="submit" class="secondary">Suchen</button></form>
+<div class="table-wrap"><table>
+  <thead><tr><th>Nr.</th><th>Kunde</th><th>Termin</th><th>Lieferart</th><th>Status</th><th>Total</th><th></th></tr></thead>
+  <tbody>{% for o in page %}
+    <tr><td><a href="{% url 'supplier_orders:detail' o.pk %}">{{ o.number }}</a></td><td>{{ o.customer.name }}</td><td>{{ o.delivery_date|date:"D d.m." }}</td>
+      <td class="small">{{ o.delivery_name }}</td><td><span class="badge st-{{ o.status }}">{{ o.get_status_display }}</span></td><td>CHF {{ o.total }}</td>
+      <td>{% if can_manage and o.next_step %}<form method="post" action="{% url 'supplier_orders:set_status' o.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button type="submit" name="status" value="{{ o.next_step.0 }}" class="secondary small">{{ o.next_step.1 }}</button></form>{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="7" class="muted">Keine Bestellungen.</td></tr>{% endfor %}</tbody>
+</table></div>
+{% include "includes/pagination.html" %}
+{% endblock %}

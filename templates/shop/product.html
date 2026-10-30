@@ -14,9 +14,9 @@
       </div>
     </div>
     <div class="table-wrap"><table>
-      <thead><tr><th>Variante</th><th>Preis</th><th>Mindestmenge</th></tr></thead>
+      <thead><tr><th>Variante</th><th>Preis</th><th>Mindestmenge</th><th></th></tr></thead>
       <tbody>{% for v in product.variants.all %}
-        <tr><td>{{ v.name }}{% if v.sold_out %} <span class="badge blocked">ausverkauft</span>{% endif %}</td><td><strong>CHF {{ v.customer_price }}</strong> <span class="small muted">/ {{ v.unit }}, {{ v.vat_label }}</span></td><td>{{ v.min_qty|floatformat:"-2" }} {{ v.unit }}</td></tr>
+        <tr><td>{{ v.name }}{% if v.sold_out %} <span class="badge blocked">ausverkauft</span>{% endif %}</td><td><strong>CHF {{ v.customer_price }}</strong> <span class="small muted">/ {{ v.unit }}, {{ v.vat_label }}</span></td><td>{{ v.min_qty|floatformat:"-2" }} {{ v.unit }}</td><td>{% include "orders/partials/add_form.html" %}</td></tr>
       {% endfor %}</tbody>
     </table></div>
     <dl class="facts">
@@ -26,7 +26,6 @@
       {% if product.allergens %}<dt>Allergene</dt><dd>{{ product.allergen_labels|join:", " }}</dd>{% endif %}
     </dl>
     {% if product.description %}<p>{{ product.description|linebreaksbr }}</p>{% endif %}
-    <p class="small muted">Bestellen ist ab der nächsten Etappe möglich.</p>
   </div>
 </div>
 {% if more %}

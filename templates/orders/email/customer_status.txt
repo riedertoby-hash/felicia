@@ -1,0 +1,4 @@
+{% autoescape off %}Guten Tag
+
+Ihre Bestellung {{ order.number }} bei {{ order.supplier.name }} ist {% if order.status == "cancelled" %}storniert worden. Bitte wenden Sie sich bei Fragen direkt an den Lieferanten.{% else %}bestätigt: {{ order.delivery_name }} am {{ order.delivery_date|date:"l, j. F Y" }}.{% endif %}
+{% endautoescape %}

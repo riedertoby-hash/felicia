@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from allauth.account.models import EmailAddress
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -8,6 +10,8 @@ from apps.catalog import csv_import
 from apps.catalog.defaults import seed_catalog_defaults
 from apps.catalog.models import Label
 from apps.core.models import Tenant
+from apps.customers.models import Address
+from apps.delivery.models import DeliveryOption, DeliveryZone, FeeTier
 from apps.orgs.models import Membership, Organization, Role
 from apps.orgs.services import create_organization
 
@@ -87,6 +91,33 @@ class Command(BaseCommand):
             for product in org.products.all()[:3]:
                 product.labels.add(bio)
 
+        for name in PRODUCTS:
+            org = Organization.objects.get(tenant=tenant, name=name)
+            if org.delivery_options.exists():
+                continue
+            p = org.supplier_profile
+            p.iban, p.account_holder, p.vat_registered = "CH9300762011623852957", name, False
+            p.save()
+            pickup = DeliveryOption.objects.create(
+                supplier=org, kind="pickup", name="Abholung im Hofladen", weekdays=[1, 4, 5], lead_days=1
+            )
+            own = DeliveryOption.objects.create(
+                supplier=org, kind="own", name="Lieferung Region Basel", weekdays=[1, 3, 4], lead_days=1
+            )
+            near = DeliveryZone.objects.create(
+                option=own, name="Zone 1 – Basel-Stadt", zip_codes="4000-4059", min_order_value=Decimal("50")
+            )
+            FeeTier.objects.bulk_create(
+                [FeeTier(zone=near, from_value=0, fee=Decimal("10")), FeeTier(zone=near, from_value=150, fee=0)]
+            )
+            far = DeliveryZone.objects.create(
+                option=own, name="Zone 2 – Baselland", cantons=["BL"], min_order_value=Decimal("100")
+            )
+            FeeTier.objects.bulk_create(
+                [FeeTier(zone=far, from_value=0, fee=Decimal("18")), FeeTier(zone=far, from_value=250, fee=0)]
+            )
+            assert pickup.pk
+
         for i, (name, city, zip_code) in enumerate(CUSTOMERS, 1):
             if Organization.objects.filter(tenant=tenant, name=name).exists():
                 continue
@@ -95,4 +126,15 @@ class Command(BaseCommand):
             p = org.customer_profile
             p.billing_street, p.billing_zip_code, p.billing_city = "Hauptstrasse 5", zip_code, city
             p.save()
+            Address.objects.create(
+                organization=org,
+                label="Küche",
+                recipient=name,
+                street="Hauptstrasse 5",
+                zip_code=zip_code,
+                city=city,
+                canton="BS",
+                is_default=True,
+                delivery_notes="Anlieferung über Hintereingang",
+            )
         self.stdout.write(self.style.SUCCESS(f"Demodaten bereit. Passwort: {PASSWORD}"))

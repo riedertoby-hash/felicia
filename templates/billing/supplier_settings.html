@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Rechnungseinstellungen{% endblock %}
+{% block content %}
+<div class="spread"><h1>Rechnungseinstellungen</h1><a class="small" href="{% url 'billing:supplier_invoices' %}">← Rechnungen</a></div>
+{% if not has_iban %}<div class="msg warning">Ohne IBAN können Rechnungen keinen QR-Zahlteil enthalten. <a href="{% url 'suppliers:bank' %}">Bankverbindung erfassen</a></div>{% endif %}
+<form method="post" novalidate class="card w-md">{% csrf_token %}
+  {% include "includes/form_fields.html" %}
+  <button type="submit" name="save_settings" value="1">Speichern</button>
+</form>
+<div class="card w-md mt">
+  <h2>Abweichungen pro Kunde</h2>
+  <p class="small muted">Z.B. ein Restaurant erhält eine Quartalsrechnung mit 60 Tagen Frist.</p>
+  {% if terms %}<ul class="plain">{% for t in terms %}<li class="spread"><span>{{ t.customer.name }}: {{ t.get_invoice_mode_display|default:"Standard" }}{% if t.payment_terms_days is not None %}, {{ t.payment_terms_days }} Tage{% endif %}</span>
+    <form method="post" action="{% url 'billing:delete_terms' t.pk %}">{% csrf_token %}<button type="submit" class="ghost small">Entfernen</button></form></li>{% endfor %}</ul>{% endif %}
+  {% if terms_form.fields.customer.queryset %}
+  <form method="post" novalidate class="form-grid mt-s">{% csrf_token %}
+    {% include "includes/form_fields.html" with form=terms_form %}
+    <div class="field end"><button type="submit" name="save_terms" value="1" class="secondary">Hinzufügen</button></div>
+  </form>
+  {% else %}<p class="small muted">Sobald Kunden bei Ihnen bestellt haben, können Sie hier Abweichungen festlegen.</p>{% endif %}
+</div>
+{% endblock %}

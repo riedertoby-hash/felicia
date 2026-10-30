@@ -5,7 +5,9 @@
 {% if current_org.status == "pending" %}
   <div class="msg warning">Ihr Konto wird vom Betreiber geprüft. Vervollständigen Sie in der Zwischenzeit Ihr Profil – danach können Sie Artikel erfassen.</div>
 {% endif %}
+{% if not has_delivery %}<div class="msg warning">Noch keine Lieferart erfasst – Kunden können noch nicht bei Ihnen bestellen. <a href="{% url 'delivery:option_new' %}">Jetzt erfassen</a></div>{% endif %}
 <div class="grid">
+  <a class="card link" href="{% url 'supplier_orders:list' %}?ansicht=neu"><h2>Neue Bestellungen</h2><p class="stat">{{ new_orders }}</p><p class="muted small">Tagesübersicht &amp; Kommissionierliste</p></a>
   <div class="card">
     <h2>Profil</h2>
     <ul class="checklist">{% for label, done in checklist %}<li class="{{ done|yesno:'done,todo' }}">{{ label }}</li>{% endfor %}</ul>

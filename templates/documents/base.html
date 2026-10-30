@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="de-CH"><head><meta charset="utf-8"><title>{% block title %}{% endblock %}</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm 18mm 18mm;
+    @bottom-right { content: "Seite " counter(page) " / " counter(pages); font-size: 8pt; color: #666; } }
+  body { font-family: "DejaVu Sans", Arial, sans-serif; font-size: 9.5pt; color: #111; line-height: 1.35; }
+  h1 { font-size: 16pt; margin: 0 0 4mm; }
+  h2 { font-size: 11pt; margin: 6mm 0 2mm; }
+  .head { display: flex; justify-content: space-between; margin-bottom: 10mm; }
+  .from { font-size: 8.5pt; color: #444; }
+  .to { margin-top: 12mm; min-height: 25mm; }
+  .meta td { padding: 0 6mm 1mm 0; }
+  table.lines { width: 100%; border-collapse: collapse; margin-top: 4mm; }
+  table.lines th { text-align: left; font-size: 8pt; text-transform: uppercase; color: #555; border-bottom: 1px solid #999; padding: 1.5mm 1mm; }
+  table.lines td { padding: 1.5mm 1mm; border-bottom: 0.5px solid #ddd; vertical-align: top; }
+  table.lines .r { text-align: right; white-space: nowrap; }
+  tr.group td { font-weight: bold; background: #f2f2f2; }
+  tr.sum td { border-bottom: 0; }
+  tr.total td { font-weight: bold; font-size: 11pt; border-top: 1px solid #111; border-bottom: 0; }
+  .muted { color: #666; }
+  .small { font-size: 8pt; }
+  .page { page-break-after: always; }
+  .page:last-child { page-break-after: auto; }
+  @page qr { @bottom-right { content: none; } }
+  .qr-page { page-break-before: always; position: relative; height: 255mm; page: qr; }
+  .qr { position: absolute; bottom: -18mm; left: -18mm; width: 210mm; height: 105mm; }
+  .qr svg { width: 210mm; height: 105mm; }
+  .temp { font-size: 10pt; margin-top: 5mm; border-bottom: 1px solid #111; }
+  .check { width: 6mm; height: 6mm; border: 1px solid #333; display: inline-block; }
+  .sign { margin-top: 15mm; display: flex; gap: 20mm; }
+  .sign div { border-top: 1px solid #333; width: 70mm; padding-top: 1mm; font-size: 8pt; }
+</style></head>
+<body>{% block body %}{% endblock %}</body></html>

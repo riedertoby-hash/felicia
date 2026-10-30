@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Danke{% endblock %}
+{% block content %}
+<div class="card w-md">
+  <h1>Danke für Ihre Bestellung</h1>
+  <p>Wir haben {{ orders|length }} Bestellung{{ orders|length|pluralize:"en" }} an die Lieferanten weitergeleitet. Sie erhalten eine Bestätigung per E-Mail.</p>
+  <ul class="plain">{% for o in orders %}<li class="spread"><span><a href="{% url 'orders:detail' o.pk %}">{{ o.number }}</a> · {{ o.supplier.name }} · {{ o.delivery_name }} am {{ o.delivery_date|date:"D j.n." }}</span><strong>CHF {{ o.total }}</strong></li>{% endfor %}</ul>
+  <div class="actions mt"><a class="btn" href="{% url 'shop:index' %}">Weiter einkaufen</a><a class="btn secondary" href="{% url 'orders:list' %}">Meine Bestellungen</a></div>
+</div>
+{% endblock %}

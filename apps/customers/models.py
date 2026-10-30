@@ -2,6 +2,7 @@ from django.db import models
 
 from apps.core.models import TimeStampedModel
 from apps.core.validators import validate_swiss_zip
+from apps.suppliers.models import CANTONS
 
 
 class CustomerProfile(TimeStampedModel):
@@ -34,6 +35,7 @@ class Address(TimeStampedModel):
     street = models.CharField("Strasse und Nr.", max_length=200)
     zip_code = models.CharField("PLZ", max_length=4, validators=[validate_swiss_zip])
     city = models.CharField("Ort", max_length=100)
+    canton = models.CharField("Kanton", max_length=2, choices=CANTONS, blank=True)
     delivery_notes = models.CharField(
         "Hinweis für die Lieferung", max_length=300, blank=True, help_text="z.B. Hintereingang, Anlieferung bis 10 Uhr"
     )

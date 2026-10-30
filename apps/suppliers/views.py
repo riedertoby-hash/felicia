@@ -26,6 +26,8 @@ def dashboard(request):
             "commission": terms.effective_commission() if terms else None,
             "base_fee": terms.effective_base_fee() if terms else None,
             "product_count": request.org.products.count(),
+            "new_orders": request.org.orders_received.filter(status="new").count(),
+            "has_delivery": request.org.delivery_options.filter(is_active=True).exists(),
             "active_count": request.org.products.filter(is_active=True).count(),
         },
     )

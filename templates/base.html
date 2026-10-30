@@ -28,6 +28,7 @@
         {% elif current_org %}
           <span class="small muted org-name">{{ current_org.name }}</span>
         {% endif %}
+        {% if current_org.kind == "customer" and "shop.order" in org_perms %}{% include "orders/partials/cart_badge.html" %}{% endif %}
         <a class="small" href="{% url 'account_security' %}">{{ user.first_name|default:user.email }}</a>
         <form method="post" action="{% url 'account_logout' %}">{% csrf_token %}<button class="ghost small" type="submit">Abmelden</button></form>
       {% else %}

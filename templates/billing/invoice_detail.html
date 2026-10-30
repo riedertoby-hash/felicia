@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Rechnung {{ invoice.number }}{% endblock %}
+{% block content %}
+<div class="spread"><h1>Rechnung {{ invoice.number }} {% if invoice.is_overdue %}<span class="badge blocked">überfällig</span>{% else %}<span class="badge inv-{{ invoice.status }}">{{ invoice.get_status_display }}</span>{% endif %}</h1>
+  <a class="btn" href="{% url 'billing:pdf' invoice.pk %}" target="_blank">PDF</a></div>
+<div class="grid">
+  <div class="card"><h2>{% if side == "issuer" %}An{% else %}Von{% endif %}</h2>{% with p=invoice.recipient_snapshot %}{% if side == "issuer" %}<p>{{ p.name }}<br>{{ p.street }}<br>{{ p.zip }} {{ p.city }}</p>{% endif %}{% endwith %}{% with p=invoice.issuer_snapshot %}{% if side != "issuer" %}<p>{{ p.name }}<br>{{ p.street }}<br>{{ p.zip }} {{ p.city }}</p>{% endif %}{% endwith %}</div>
+  <div class="card"><p>Datum {{ invoice.issue_date|date:"d.m.Y" }}<br>Zahlbar bis <strong>{{ invoice.due_date|date:"d.m.Y" }}</strong>{% if invoice.paid_at %}<br>Bezahlt am {{ invoice.paid_at|date:"d.m.Y" }}{% endif %}</p><p class="stat">CHF {{ invoice.total }}</p></div>
+</div>
+<div class="table-wrap mt"><table>
+  <thead><tr><th>Beschreibung</th><th>Menge</th><th>Preis</th><th>Betrag</th></tr></thead>
+  <tbody>{% for l in lines %}{% if l.quantity == 0 and l.total == 0 %}<tr class="group-row"><td colspan="4"><strong>{{ l.description }}</strong></td></tr>{% else %}<tr><td>{{ l.description }}</td><td>{% if l.unit %}{{ l.quantity|floatformat:"-2" }} {{ l.unit }}{% endif %}</td><td>{% if l.unit %}{{ l.unit_price }}{% endif %}</td><td>CHF {{ l.total }}</td></tr>{% endif %}{% endfor %}
+  {% for rate, base, vat in invoice.vat_breakdown %}<tr><td colspan="3" class="small muted">MWST {{ rate }} % auf CHF {{ base }}</td><td class="small muted">CHF {{ vat }}</td></tr>{% endfor %}
+  <tr><td colspan="3"><strong>Total</strong></td><td><strong>CHF {{ invoice.total }}</strong></td></tr></tbody>
+</table></div>
+{% if can_manage and invoice.status != "cancelled" %}
+<div class="actions mt">
+  <form method="post" action="{% url 'billing:paid' invoice.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><input type="hidden" name="paid" value="{% if invoice.status == 'paid' %}0{% else %}1{% endif %}"><button type="submit">{% if invoice.status == "paid" %}Wieder als offen markieren{% else %}Als bezahlt markieren{% endif %}</button></form>
+  {% if invoice.status == "open" %}<form method="post" action="{% url 'billing:cancel' invoice.pk %}" data-confirm="Rechnung {{ invoice.number }} stornieren? Die Bestellungen werden wieder verrechenbar.">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button type="submit" class="danger">Stornieren</button></form>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

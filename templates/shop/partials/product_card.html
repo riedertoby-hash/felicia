@@ -10,7 +10,9 @@
     </div>
     <ul class="variants">{% for v in p.variants.all %}
       <li><span>{{ v.name }}</span><strong>CHF {{ v.customer_price }}</strong></li>
+      {% if p.variants.all|length == 1 %}<li class="card-add">{% include "orders/partials/add_form.html" %}</li>{% endif %}
     {% endfor %}</ul>
+    {% if p.variants.all|length > 1 and "shop.order" in org_perms and current_org.kind == "customer" %}<a class="btn secondary small" href="{% url 'shop:product' p.pk %}">Variante wählen</a>{% endif %}
     <p class="small muted">Bestellen bis {{ p.lead_time_days }} Tag{{ p.lead_time_days|pluralize:"e" }} vor Lieferung</p>
   </div>
 </article>
