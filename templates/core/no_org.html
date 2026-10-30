@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Kein Zugang{% endblock %}
+{% block main_class %}narrow{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Noch kein Zugang</h1>
+  <p>Ihr Konto ist mit keiner aktiven Organisation verbunden. Entweder wurde sie gesperrt, oder Ihre Einladung ist noch offen.</p>
+  <p class="muted">Bitte wenden Sie sich an den Betreiber{% if request.tenant.settings.contact_email %} unter <a href="mailto:{{ request.tenant.settings.contact_email }}">{{ request.tenant.settings.contact_email }}</a>{% endif %}.</p>
+</div>
+{% endblock %}

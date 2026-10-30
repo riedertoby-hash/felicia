@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Lieferadressen{% endblock %}
+{% block content %}
+<div class="spread"><h1>Lieferadressen</h1><a class="btn" href="{% url 'customers:address_new' %}">Neue Adresse</a></div>
+<div class="grid">
+{% for a in addresses %}
+  <div class="card">
+    <h2>{{ a.label }}{% if a.is_default %} <span class="badge ok">Standard</span>{% endif %}</h2>
+    <p>{{ a.recipient }}<br>{{ a.street }}<br>{{ a.zip_code }} {{ a.city }}</p>
+    {% if a.delivery_notes %}<p class="small muted">{{ a.delivery_notes }}</p>{% endif %}
+    <div class="actions">
+      <a class="btn secondary" href="{% url 'customers:address_edit' a.pk %}">Bearbeiten</a>
+      <form method="post" action="{% url 'customers:address_delete' a.pk %}" data-confirm="Adresse löschen?">{% csrf_token %}<button class="danger" type="submit">Löschen</button></form>
+    </div>
+  </div>
+{% empty %}<p class="muted">Noch keine Lieferadresse erfasst.</p>{% endfor %}
+</div>
+{% endblock %}

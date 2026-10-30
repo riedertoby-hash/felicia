@@ -1,0 +1,12 @@
+{% extends "allauth/layouts/base.html" %}
+{% block head_title %}Registrieren{% endblock %}
+{% block content %}
+<h1>Konto eröffnen</h1>
+<p class="muted">Schon registriert? <a href="{% url 'account_login' %}{% if redirect_field_value %}?next={{ redirect_field_value|urlencode }}{% endif %}">Anmelden</a></p>
+<form method="post" action="{% url 'account_signup' %}" novalidate>
+  {% csrf_token %}
+  {% include "includes/form_fields.html" %}
+  {% if redirect_field_value %}<input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">{% endif %}
+  <button type="submit">Konto eröffnen</button>
+</form>
+{% endblock %}

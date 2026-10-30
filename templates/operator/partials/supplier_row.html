@@ -1,0 +1,14 @@
+<tr id="org-{{ org.pk }}">
+  <td><a href="{% url 'operator:supplier' org.pk %}">{{ org.name }}</a></td>
+  <td>{{ org.supplier_profile.zip_code }} {{ org.supplier_profile.city }}</td>
+  <td>{{ org.created_at|date:"d.m.Y" }}</td>
+  <td><span class="badge {{ org.status }}">{{ org.get_status_display }}</span></td>
+  <td>{% if "platform.suppliers.manage" in org_perms %}
+    <form method="post" action="{% url 'operator:set_status' org.pk %}" hx-post="{% url 'operator:set_status' org.pk %}" hx-target="#org-{{ org.pk }}" hx-swap="outerHTML">{% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.get_full_path }}">
+      {% if org.status == "pending" %}<button name="action" value="approve" type="submit">Freischalten</button>{% endif %}
+      {% if org.status == "blocked" %}<button name="action" value="unblock" class="secondary" type="submit">Entsperren</button>
+      {% else %}<button name="action" value="block" class="danger" type="submit">Sperren</button>{% endif %}
+    </form>{% endif %}
+  </td>
+</tr>

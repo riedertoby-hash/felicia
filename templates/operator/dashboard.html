@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Betreiber{% endblock %}
+{% block content %}
+<h1>Übersicht</h1>
+<div class="grid">
+  <a class="card link" href="{% url 'operator:suppliers' %}?status=pending"><div class="stat">{{ counts.pending }}</div><div class="muted">warten auf Freischaltung</div></a>
+  <a class="card link" href="{% url 'operator:suppliers' %}?status=active"><div class="stat">{{ counts.active }}</div><div class="muted">aktive Lieferanten</div></a>
+  <a class="card link" href="{% url 'operator:customers' %}"><div class="stat">{{ customer_count }}</div><div class="muted">Kunden</div></a>
+  <a class="card link" href="{% url 'operator:settings' %}"><div class="stat">{{ settings.default_commission_percent|floatformat:"-2" }} %</div><div class="muted">Standard-Provision{% if settings.base_fee_enabled %} · CHF {{ settings.base_fee_monthly }} / Monat{% endif %}</div></a>
+</div>
+{% if pending %}
+<h2 class="mt">Neue Lieferanten</h2>
+<div class="table-wrap"><table>
+  <thead><tr><th>Name</th><th>Ort</th><th>Registriert</th><th>Status</th><th></th></tr></thead>
+  <tbody>{% for org in pending %}{% include "operator/partials/supplier_row.html" %}{% endfor %}</tbody>
+</table></div>
+{% endif %}
+{% endblock %}

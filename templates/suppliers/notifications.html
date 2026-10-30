@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Benachrichtigungen{% endblock %}
+{% block content %}
+<h1>Wie erfahren Sie von neuen Bestellungen?</h1>
+<form method="post" novalidate class="card w-md">{% csrf_token %}
+  {{ form.non_field_errors }}
+  {% include "includes/field.html" with field=form.notify_channel %}
+  {% include "includes/field.html" with field=form.notify_mode %}
+  {% include "includes/field.html" with field=form.notify_digest_time %}
+  <div class="form-grid">{% include "includes/field.html" with field=form.notify_email %}{% include "includes/field.html" with field=form.notify_phone %}</div>
+  {% include "includes/field.html" with field=form.webhook_url %}
+  <p class="small muted">Der Tageszusammenzug enthält die Kommissionierliste als PDF.</p>
+  <button type="submit">Speichern</button>
+</form>
+{% endblock %}

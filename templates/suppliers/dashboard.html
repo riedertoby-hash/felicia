@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Übersicht{% endblock %}
+{% block content %}
+<h1>Willkommen, {{ current_org.name }}</h1>
+{% if current_org.status == "pending" %}
+  <div class="msg warning">Ihr Konto wird vom Betreiber geprüft. Vervollständigen Sie in der Zwischenzeit Ihr Profil – danach können Sie Artikel erfassen.</div>
+{% endif %}
+<div class="grid">
+  <div class="card">
+    <h2>Profil</h2>
+    <ul class="checklist">{% for label, done in checklist %}<li class="{{ done|yesno:'done,todo' }}">{{ label }}</li>{% endfor %}</ul>
+    {% if "org.edit" in org_perms %}<div class="actions"><a class="btn secondary" href="{% url 'suppliers:profile' %}">Profil bearbeiten</a></div>{% endif %}
+  </div>
+  <div class="card">
+    <h2>Ihre Konditionen</h2>
+    <p>Provision des Marktplatzes: <strong>{{ commission|floatformat:"-2" }} %</strong> vom Kundenpreis</p>
+    {% if base_fee %}<p>Grundgebühr: <strong>CHF {{ base_fee }}</strong> / Monat</p>{% endif %}
+    <p class="small muted">Festgelegt durch den Betreiber.</p>
+  </div>
+  <div class="card">
+    <h2>Benachrichtigungen</h2>
+    <p>{{ profile.get_notify_channel_display }} · {{ profile.get_notify_mode_display }}</p>
+    {% if "org.edit" in org_perms %}<div class="actions"><a class="btn secondary" href="{% url 'suppliers:notifications' %}">Ändern</a></div>{% endif %}
+  </div>
+</div>
+{% endblock %}

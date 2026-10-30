@@ -1,0 +1,4 @@
+{% extends "base.html" %}
+{% block title %}Kein Zugriff{% endblock %}
+{% block main_class %}narrow{% endblock %}
+{% block content %}<div class="card"><h1>Kein Zugriff</h1><p>Sie haben keine Berechtigung für diese Seite.</p>{% if exception and "403" == "403" %}<p class="muted">{{ exception }}</p>{% endif %}<a class="btn secondary" href="/">Zur Startseite</a></div>{% endblock %}

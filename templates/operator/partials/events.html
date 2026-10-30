@@ -1,0 +1,8 @@
+<div class="table-wrap"><table>
+  <thead><tr><th>Zeit</th><th>Wer</th><th>Was</th><th>Organisation</th><th>Details</th></tr></thead>
+  <tbody>{% for e in events %}
+    <tr><td class="small">{{ e.created_at|date:"d.m.Y H:i" }}</td><td class="small">{{ e.actor_label|default:"System" }}</td><td>{{ e.label }}</td>
+      <td class="small">{{ e.organization|default:"" }}</td>
+      <td class="small muted">{% for k, v in e.changes.items %}{{ k }}: {% if v.0 is not None or v.1 is not None %}{% if v|length == 2 %}{{ v.0|default:"–" }} → {{ v.1|default:"–" }}{% else %}{{ v }}{% endif %}{% endif %}{% if not forloop.last %}; {% endif %}{% endfor %}{% if e.target_label and not e.changes %}{{ e.target_label }}{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="5" class="muted">Keine Einträge.</td></tr>{% endfor %}</tbody>
+</table></div>

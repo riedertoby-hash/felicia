@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Profil{% endblock %}
+{% block content %}
+<h1>Profil &amp; Rechnungsadresse</h1>
+<form method="post" novalidate class="card w-md">{% csrf_token %}
+  <div class="form-grid">{% include "includes/form_fields.html" %}</div>
+  <button type="submit">Speichern</button>
+</form>
+{% endblock %}

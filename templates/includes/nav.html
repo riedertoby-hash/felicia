@@ -1,0 +1,22 @@
+{% with p=request.path %}
+<nav class="nav" aria-label="Hauptnavigation">
+  {% if current_org.kind == "operator" %}
+    <a href="{% url 'operator:dashboard' %}" class="{% if p == '/betreiber/' %}active{% endif %}">Übersicht</a>
+    {% if "platform.suppliers.view" in org_perms %}<a href="{% url 'operator:suppliers' %}" class="{% if '/betreiber/lieferanten' in p %}active{% endif %}">Lieferanten</a>{% endif %}
+    {% if "platform.customers.view" in org_perms %}<a href="{% url 'operator:customers' %}" class="{% if '/betreiber/kunden' in p %}active{% endif %}">Kunden</a>{% endif %}
+    {% if "platform.audit" in org_perms %}<a href="{% url 'operator:audit' %}" class="{% if '/betreiber/protokoll' in p %}active{% endif %}">Protokoll</a>{% endif %}
+    {% if "platform.settings" in org_perms %}<a href="{% url 'operator:settings' %}" class="{% if '/betreiber/einstellungen' in p %}active{% endif %}">Einstellungen</a>{% endif %}
+  {% elif current_org.kind == "supplier" %}
+    <a href="{% url 'suppliers:dashboard' %}" class="{% if p == '/lieferant/' %}active{% endif %}">Übersicht</a>
+    {% if "org.view" in org_perms %}<a href="{% url 'suppliers:profile' %}" class="{% if '/lieferant/profil' in p %}active{% endif %}">Profil</a>{% endif %}
+    {% if "org.edit" in org_perms %}<a href="{% url 'suppliers:notifications' %}" class="{% if '/lieferant/benachrichtigungen' in p %}active{% endif %}">Benachrichtigungen</a>{% endif %}
+    {% if "org.bank" in org_perms %}<a href="{% url 'suppliers:bank' %}" class="{% if '/lieferant/bank' in p %}active{% endif %}">Bank</a>{% endif %}
+  {% elif current_org.kind == "customer" %}
+    <a href="{% url 'customers:dashboard' %}" class="{% if p == '/kunde/' %}active{% endif %}">Übersicht</a>
+    {% if "org.edit" in org_perms %}<a href="{% url 'customers:profile' %}" class="{% if '/kunde/profil' in p %}active{% endif %}">Profil</a>{% endif %}
+    {% if "customer.addresses" in org_perms %}<a href="{% url 'customers:addresses' %}" class="{% if '/kunde/adressen' in p %}active{% endif %}">Adressen</a>{% endif %}
+  {% endif %}
+  {% if "team.manage" in org_perms %}<a href="{% url 'orgs:team' %}" class="{% if p == '/team/' %}active{% endif %}">Team</a>{% endif %}
+  <a href="{% url 'account_security' %}" class="{% if '/konto/' in p %}active{% endif %}">Sicherheit</a>
+</nav>
+{% endwith %}

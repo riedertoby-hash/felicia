@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Adresse{% endblock %}
+{% block content %}
+<h1>{% if address.pk %}Adresse bearbeiten{% else %}Neue Lieferadresse{% endif %}</h1>
+<form method="post" novalidate class="card w-md">{% csrf_token %}
+  <div class="form-grid">{% include "includes/form_fields.html" %}</div>
+  <div class="actions"><button type="submit">Speichern</button><a class="btn secondary" href="{% url 'customers:addresses' %}">Abbrechen</a></div>
+</form>
+{% endblock %}

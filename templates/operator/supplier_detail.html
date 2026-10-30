@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ org.name }}{% endblock %}
+{% block content %}
+<div class="spread"><h1>{{ org.name }} <span class="badge {{ org.status }}">{{ org.get_status_display }}</span></h1>
+  <a href="{% url 'operator:suppliers' %}" class="small">← Alle Lieferanten</a></div>
+<div class="grid">
+  <div class="card">
+    <h2>Stammdaten</h2>
+    {% if profile %}
+    <p>{{ profile.legal_name }}<br>{{ profile.street }}<br>{{ profile.zip_code }} {{ profile.city }} {{ profile.canton }}</p>
+    <p class="small">{% if profile.contact_email %}<a href="mailto:{{ profile.contact_email }}">{{ profile.contact_email }}</a><br>{% endif %}{{ profile.phone }}</p>
+    <p class="small muted">MWST: {% if profile.vat_registered %}{{ profile.vat_number }}{% else %}nicht pflichtig{% endif %}<br>
+    Bank: {% if profile.iban %}{{ profile.iban_masked }}{% else %}fehlt{% endif %}</p>
+    {% endif %}
+    {% if "platform.suppliers.manage" in org_perms %}
+    <form method="post" action="{% url 'operator:set_status' org.pk %}" class="actions">{% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.path }}">
+      {% if org.status == "pending" %}<button name="action" value="approve" type="submit">Freischalten</button>{% endif %}
+      {% if org.status == "blocked" %}<button name="action" value="unblock" class="secondary" type="submit">Entsperren</button>
+      {% else %}<button name="action" value="block" class="danger" type="submit" data-confirm="{{ org.name }} sperren? Alle Benutzer verlieren sofort den Zugang.">Sperren</button>{% endif %}
+    </form>
+    {% endif %}
+  </div>
+  <div class="card">
+    <h2>Konditionen</h2>
+    <p>Provision: <strong>{{ terms.effective_commission|floatformat:"-2" }} %</strong>{% if terms.commission_percent is None %} <span class="muted small">(Standard)</span>{% endif %}<br>
+       Grundgebühr: <strong>CHF {{ terms.effective_base_fee }}</strong> / Monat</p>
+    {% if can_edit_terms %}
+    <form method="post" novalidate>{% csrf_token %}
+      {% include "includes/form_fields.html" %}
+      <button type="submit">Konditionen speichern</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+<h2 class="mt">Benutzer</h2>
+<div class="table-wrap"><table>
+  <thead><tr><th>Name</th><th>E-Mail</th><th>Rolle</th></tr></thead>
+  <tbody>{% for m in members %}<tr><td>{{ m.user.get_full_name|default:"–" }}</td><td>{{ m.user.email }}</td><td>{{ m.role.name }}</td></tr>{% endfor %}</tbody>
+</table></div>
+{% if events %}
+<h2 class="mt">Letzte Änderungen</h2>
+{% include "operator/partials/events.html" %}
+{% endif %}
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Team{% endblock %}
+{% block content %}
+<div class="spread"><h1>Team · {{ current_org.name }}</h1></div>
+<div class="stack">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Name</th><th>E-Mail</th><th>Rolle</th><th></th></tr></thead>
+      <tbody>
+      {% for m in members %}
+        <tr>
+          <td>{{ m.user.get_full_name|default:"–" }}{% if m.user == user %} <span class="badge">Sie</span>{% endif %}</td>
+          <td>{{ m.user.email }}</td>
+          <td>
+            {% if m.user == user %}{{ m.role.name }}{% else %}
+            <form method="post" action="{% url 'orgs:change_role' m.pk %}">{% csrf_token %}
+              {{ m.role_form.role }}<noscript><button type="submit" class="secondary">Speichern</button></noscript>
+            </form>{% endif %}
+          </td>
+          <td>{% if m.user != user %}
+            <form method="post" action="{% url 'orgs:remove_member' m.pk %}" data-confirm="{{ m.user }} wirklich entfernen?">{% csrf_token %}<button class="danger" type="submit">Entfernen</button></form>
+          {% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Person einladen</h2>
+    <form method="post" action="{% url 'orgs:invite' %}" class="form-grid">{% csrf_token %}
+      {% include "includes/form_fields.html" with form=invite_form %}
+      <div class="field end"><button type="submit">Einladung senden</button></div>
+    </form>
+    <details><summary class="small muted">Was darf welche Rolle?</summary>
+      <ul class="small">{% for r in invite_form.fields.role.queryset %}<li><strong>{{ r.name }}:</strong> {{ r.description }}</li>{% endfor %}</ul>
+    </details>
+  </div>
+
+  {% if invitations %}
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Offene Einladung</th><th>Rolle</th><th>Gültig bis</th><th></th></tr></thead>
+      <tbody>{% for i in invitations %}
+        <tr><td>{{ i.email }}</td><td>{{ i.role.name }}</td><td>{{ i.expires_at|date:"d.m.Y" }}</td>
+          <td><form method="post" action="{% url 'orgs:revoke_invitation' i.pk %}">{% csrf_token %}<button class="secondary" type="submit">Zurückziehen</button></form></td></tr>
+      {% endfor %}</tbody>
+    </table>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

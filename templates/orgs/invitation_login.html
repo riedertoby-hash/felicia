@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Einladung{% endblock %}
+{% block main_class %}narrow{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Einladung zu {{ invitation.organization.name }}</h1>
+  <p>Für {{ invitation.email }} gibt es bereits ein Konto. Bitte melden Sie sich an, um die Einladung anzunehmen.</p>
+  <a class="btn" href="{{ login_url }}">Anmelden</a>
+</div>
+{% endblock %}
