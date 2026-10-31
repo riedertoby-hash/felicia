@@ -78,6 +78,7 @@ ACTION_LABELS = {
     "invoice.unpaid": "Rechnung wieder offen",
     "invoice.cancelled": "Rechnung storniert",
     "billing.settings": "Rechnungseinstellungen geändert",
+    "import.done": "Daten importiert",
     "address.saved": "Adresse gespeichert",
     "address.deleted": "Adresse gelöscht",
 }

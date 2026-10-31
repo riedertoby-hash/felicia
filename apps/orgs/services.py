@@ -26,6 +26,15 @@ def create_organization(*, tenant, kind, name, owner, request=None, **options):
     return org
 
 
+@transaction.atomic
+def create_organization_without_owner(*, tenant, kind, name, status, request=None, **options):
+    """For imports: the organization exists before its people; the owner joins via invitation."""
+    org = Organization.objects.create(tenant=tenant, kind=kind, name=name, status=status)
+    organization_created.send(sender=Organization, organization=org, owner=None, options=options)
+    log("org.created", request=request, organization=org, target=org, changes={"kind": kind, "import": True})
+    return org
+
+
 def _owners(org):
     return Membership.objects.filter(organization=org, is_active=True, role__is_owner=True)
 

@@ -16,5 +16,5 @@ RUN DJANGO_DEBUG=1 python manage.py collectstatic --noinput \
 USER app
 
 EXPOSE 8000
-HEALTHCHECK --interval=30s --timeout=3s CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz')"
-CMD ["sh", "-c", "python manage.py migrate --noinput && gunicorn config.wsgi --bind 0.0.0.0:8000 --workers 3 --timeout 30 --access-logfile -"]
+HEALTHCHECK --interval=30s --timeout=5s CMD python scripts/healthcheck.py
+CMD ["sh", "-c", "python manage.py migrate --noinput && gunicorn config.wsgi --bind 0.0.0.0:8000 --workers 3 --timeout 60 --forwarded-allow-ips='*' --access-logfile -"]

@@ -38,6 +38,7 @@ SETTINGS_PREFIXES = (
     "/betreiber/einstellungen",
     "/betreiber/katalog",
     "/betreiber/rechnungsdaten",
+    "/betreiber/import",
 )
 
 
@@ -80,6 +81,12 @@ def settings_hub(request):
             "platform.settings", "Marktplatz", "Provision, Grundgebühr, Freischaltung, 2FA-Pflicht", "operator:settings"
         )
         add("platform.settings", "Kategorien & Labels", "Struktur des Shops", "catalog_admin:taxonomy")
+        add(
+            "platform.suppliers.manage",
+            "Daten importieren",
+            "Lieferanten, Kunden, Artikel aus CSV/Excel",
+            "imports:upload",
+        )
         add(
             "platform.settings",
             "Rechnungsdaten",

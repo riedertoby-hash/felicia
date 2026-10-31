@@ -71,16 +71,26 @@ def parse(text, *, supplier):
     if missing:
         return [], f"Spalten fehlen: {', '.join(missing)}. Bitte die Vorlage verwenden."
     reader.fieldnames = headers
+    records = [(i, {k: (v or "").strip() for k, v in raw.items() if k}) for i, raw in enumerate(reader, start=2)]
+    return parse_rows(records, supplier=supplier)
 
+
+def parse_rows(records, *, supplier, create_categories=False, default_variant=""):
+    """records: [(line number, {column: text})]. Used by the supplier CSV upload and the operator import.
+    create_categories: unknown categories are created on import instead of being an error.
+    default_variant: variant name used when the source has no variant column (e.g. «Standard")."""
+    if len(records) > MAX_ROWS:
+        return [], f"Maximal {MAX_ROWS} Zeilen pro Import."
     categories = {c.name.lower(): c for c in Category.objects.filter(tenant=supplier.tenant)}
     existing_skus = dict(Variant.objects.filter(product__supplier=supplier).exclude(sku="").values_list("sku", "pk"))
     rows, seen = [], set()
-    for i, raw in enumerate(reader, start=2):
-        if i - 1 > MAX_ROWS:
-            return rows, f"Maximal {MAX_ROWS} Zeilen pro Import."
-        values = {k: (v or "").strip() for k, v in raw.items() if k}
+    for i, values in records:
         if not any(values.values()):
             continue
+        if default_variant and not values.get("variante"):
+            values["variante"] = default_variant
+        if create_categories and not values.get("kategorie"):
+            values["kategorie"] = "Diverses"
         row = Row(line=i)
         for col in REQUIRED:
             if not values.get(col):
@@ -107,8 +117,12 @@ def parse(text, *, supplier):
         if vat is None:
             row.errors.append("MWST: 2.6, 8.1 oder 0")
         category = categories.get(values.get("kategorie", "").lower())
+        new_category = ""
         if values.get("kategorie") and category is None:
-            row.errors.append(f"Kategorie «{values.get('kategorie')}» gibt es nicht")
+            if create_categories:
+                new_category = values["kategorie"][:80]
+            else:
+                row.errors.append(f"Kategorie «{values.get('kategorie')}» gibt es nicht")
         key = (values.get("artikel", "").lower(), values.get("variante", "").lower())
         if key in seen:
             row.errors.append("Doppelte Zeile (gleicher Artikel und Variante)")
@@ -121,6 +135,7 @@ def parse(text, *, supplier):
             "vat": vat,
             "min_qty": min_qty,
             "category": category,
+            "new_category": new_category,
             "temperature": temperature,
             "shelf_life_days": int(shelf) if shelf is not None else None,
             "lead_time_days": int(lead) if lead is not None else 1,
@@ -152,6 +167,10 @@ def apply(rows, *, supplier):
         )
         if product is None:
             product = Product(tenant=supplier.tenant, supplier=supplier, name=d["name"])
+        if d.get("new_category"):
+            d["category"], _ = Category.objects.get_or_create(
+                tenant=supplier.tenant, parent=None, name=d["new_category"], defaults={"sort": 900}
+            )
         product.category = d["category"]
         product.temperature = d["temperature"]
         product.lead_time_days = d["lead_time_days"]

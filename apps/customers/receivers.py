@@ -11,6 +11,6 @@ def create_profile(sender, organization, owner, options, **kwargs):
         CustomerProfile.objects.create(
             organization=organization,
             customer_type=options.get("customer_type", "business"),
-            billing_email=owner.email,
+            billing_email=owner.email if owner else "",
             billing_name=organization.name,
         )

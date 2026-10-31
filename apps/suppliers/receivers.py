@@ -11,6 +11,6 @@ def create_profile(sender, organization, owner, options, **kwargs):
         from apps.operator.models import SupplierTerms
 
         SupplierProfile.objects.create(
-            organization=organization, contact_email=owner.email, legal_name=organization.name
+            organization=organization, contact_email=owner.email if owner else "", legal_name=organization.name
         )
         SupplierTerms.objects.get_or_create(organization=organization)

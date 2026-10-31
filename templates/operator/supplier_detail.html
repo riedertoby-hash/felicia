@@ -34,6 +34,7 @@
   </div>
 </div>
 <h2 class="mt">Benutzer</h2>
+{% if not members and "platform.suppliers.manage" in org_perms %}<div class="card"><p>Noch kein Zugang – Inhaber einladen:</p>{% include "imports/partials/invite_form.html" with org=org %}</div>{% endif %}
 <div class="table-wrap"><table>
   <thead><tr><th>Name</th><th>E-Mail</th><th>Rolle</th></tr></thead>
   <tbody>{% for m in members %}<tr><td>{{ m.user.get_full_name|default:"–" }}</td><td>{{ m.user.email }}</td><td>{{ m.role.name }}</td></tr>{% endfor %}</tbody>

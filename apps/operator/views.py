@@ -120,7 +120,11 @@ def set_status(request, pk):
 
 @org_required("platform.customers.view", kind=KIND)
 def customers(request):
-    qs = _tenant_orgs(request, Organization.Kind.CUSTOMER).select_related("customer_profile")
+    qs = (
+        _tenant_orgs(request, Organization.Kind.CUSTOMER)
+        .select_related("customer_profile")
+        .annotate(member_count=Count("memberships", distinct=True))
+    )
     q = request.GET.get("q", "").strip()
     if q:
         qs = qs.filter(Q(name__icontains=q) | Q(memberships__user__email__icontains=q)).distinct()

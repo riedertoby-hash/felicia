@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Vorschau Import{% endblock %}
+{% block content %}
+<h1>Vorschau: {{ kind_label }}</h1>
+<div class="grid">
+  <div class="card"><div class="stat">{{ ok_count }}</div><div class="muted">werden übernommen</div></div>
+  <div class="card"><div class="stat">{{ skip_count }}</div><div class="muted">werden übersprungen (Fehler oder schon vorhanden)</div></div>
+</div>
+<div class="card mt small">
+  <strong>Erkannte Spalten:</strong> {% for field, header in mapping.items %}<span class="badge ok">{{ header }} → {{ field }}</span> {% endfor %}
+  {% if unknown %}<br><strong>Ignoriert:</strong> {{ unknown|join:", " }}{% endif %}
+</div>
+<form method="post" action="{% url 'imports:confirm' %}" class="card mt">{% csrf_token %}
+  {% if kind != "products" %}<div class="check"><input type="checkbox" id="invite" name="invite" value="1"><label for="invite">Einladungen sofort per E-Mail verschicken <span class="muted">(sonst später, z.B. kurz vor dem Pilotstart)</span></label></div>{% endif %}
+  <div class="actions mt-s"><button type="submit" {% if not ok_count %}disabled{% endif %}>{{ ok_count }} übernehmen</button><a class="btn secondary" href="{% url 'imports:upload' %}">Abbrechen</a></div>
+</form>
+
+{% if kind == "products" %}
+  {% for supplier, rows in groups.items %}
+  <h2 class="mt">{{ supplier.name }}</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Zeile</th><th>Artikel</th><th>Variante</th><th>Preis</th><th>Kategorie</th><th>Aktion</th><th>Hinweis</th></tr></thead>
+    <tbody>{% for r in rows %}<tr class="{% if r.errors %}row-error{% endif %}"><td>{{ r.line }}</td><td>{{ r.data.name }}</td><td>{{ r.data.variant }}</td><td>{% if r.data.price %}CHF {{ r.data.price }}{% endif %}</td><td>{{ r.data.category|default:r.data.new_category }}{% if r.data.new_category %} <span class="badge pending">neu</span>{% endif %}</td><td>{% if not r.errors %}<span class="badge">{{ r.action }}</span>{% endif %}</td><td class="small">{{ r.errors|join:"; " }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% endfor %}
+  {% if orphans %}<h2 class="mt">Ohne Lieferant</h2><div class="table-wrap"><table><tbody>{% for r in orphans %}<tr class="row-error"><td>{{ r.line }}</td><td>{{ r.data.name }}</td><td class="small">{{ r.errors|join:"; " }}</td></tr>{% endfor %}</tbody></table></div>{% endif %}
+{% else %}
+<div class="table-wrap mt"><table>
+  <thead><tr><th>Zeile</th><th>Name</th><th>E-Mail</th><th>Ort</th><th>Status</th><th>Hinweise</th></tr></thead>
+  <tbody>{% for r in rows %}<tr class="{% if r.errors %}row-error{% endif %}"><td>{{ r.line }}</td><td>{{ r.data.name }}</td><td class="small">{{ r.data.email }}</td><td class="small">{{ r.data.zip }} {{ r.data.city }}</td>
+    <td>{% if r.errors %}<span class="badge blocked">Fehler</span>{% elif r.action == "existiert" %}<span class="badge">existiert</span>{% else %}<span class="badge ok">neu</span>{% endif %}</td>
+    <td class="small">{{ r.errors|join:"; " }}{% if r.errors and r.notes %}; {% endif %}{{ r.notes|join:"; " }}</td></tr>{% endfor %}</tbody>
+</table></div>
+{% endif %}
+{% endblock %}

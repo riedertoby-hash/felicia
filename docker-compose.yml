@@ -1,5 +1,42 @@
-# Production-like stack. A reverse proxy (e.g. Caddy/Traefik) with TLS sits in front of "web".
+# Production stack for one server (e.g. Infomaniak VPS / Public Cloud, Ubuntu 24.04).
+# Start:  docker compose up -d --build      Logs: docker compose logs -f web
 services:
+  caddy:
+    image: caddy:2.8
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+      - media:/srv/media:ro
+    depends_on: [web]
+
+  web:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - media:/app/media
+
+  scheduler:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    command: ["sh", "scripts/scheduler.sh"]
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - media:/app/media
+    healthcheck:
+      disable: true
+
   db:
     image: postgres:16-alpine
     restart: unless-stopped
@@ -13,18 +50,8 @@ services:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 10s
 
-  web:
-    build: .
-    restart: unless-stopped
-    env_file: .env
-    depends_on:
-      db:
-        condition: service_healthy
-    volumes:
-      - media:/app/media
-    ports:
-      - "127.0.0.1:8000:8000"
-
 volumes:
   pgdata:
   media:
+  caddy_data:
+  caddy_config:
