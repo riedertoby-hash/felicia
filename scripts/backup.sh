@@ -3,7 +3,8 @@
 #   15 2 * * * /opt/felicia/scripts/backup.sh
 # Needs: BACKUP_DIR, BACKUP_PASSPHRASE_FILE (gpg symmetric), docker compose in /opt/felicia.
 # Optional: RCLONE_REMOTE (e.g. swissbackup:felicia) for an offsite copy.
-# Restore: gpg -d felicia_X.sql.gz.gpg | gunzip | docker compose exec -T db psql -U felicia felicia
+# Restore: gpg -d felicia_X.sql.gz.gpg | gunzip | docker compose exec -T db psql -U postgres felicia
+#   (then: ALTER DATABASE/tables owner back to the app role if restored into a fresh database)
 set -eu
 cd "$(dirname "$0")/.."
 BACKUP_DIR="${BACKUP_DIR:-./backups}"
@@ -11,7 +12,7 @@ KEEP_DAYS="${KEEP_DAYS:-30}"
 mkdir -p "$BACKUP_DIR"
 STAMP=$(date +%Y-%m-%d_%H%M)
 FILE="$BACKUP_DIR/felicia_$STAMP.sql.gz.gpg"
-docker compose exec -T db sh -c 'pg_dump -U "$POSTGRES_USER" --no-owner "$POSTGRES_DB"' \
+docker compose exec -T db sh -c 'pg_dump -U postgres --no-owner "$APP_DB_NAME"' \
   | gzip \
   | gpg --batch --yes --symmetric --cipher-algo AES256 --passphrase-file "$BACKUP_PASSPHRASE_FILE" -o "$FILE"
 # media files (logos, product images)

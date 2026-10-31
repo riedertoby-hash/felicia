@@ -85,6 +85,7 @@ MIDDLEWARE = [
     "apps.core.middleware.TenantMiddleware",
     "apps.orgs.middleware.OrganizationMiddleware",
     "apps.accounts.middleware.EnforceMfaMiddleware",
+    "apps.core.rls.RowLevelSecurityMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"

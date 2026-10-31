@@ -35,6 +35,7 @@ if [ ! -f .env ]; then
   SECRET=$(python3 -c "import secrets; print(secrets.token_urlsafe(50))")
   FKEY=$(docker run --rm python:3.13-slim sh -c "pip -q install cryptography >/dev/null 2>&1 && python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())'")
   DBPASS=$(python3 -c "import secrets; print(secrets.token_urlsafe(32))")
+  DBADMINPASS=$(python3 -c "import secrets; print(secrets.token_urlsafe(32))")
   cat > .env <<ENV
 DOMAIN=$DOMAIN
 DJANGO_DEBUG=0
@@ -46,6 +47,7 @@ DEFAULT_TENANT_SLUG=feldzutisch
 POSTGRES_DB=felicia
 POSTGRES_USER=felicia
 POSTGRES_PASSWORD=$DBPASS
+POSTGRES_ADMIN_PASSWORD=$DBADMINPASS
 POSTGRES_HOST=db
 POSTGRES_SSLMODE=disable
 DJANGO_EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend

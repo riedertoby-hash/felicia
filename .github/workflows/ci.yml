@@ -23,7 +23,8 @@ jobs:
           --health-cmd "pg_isready -U felicia" --health-interval 5s --health-timeout 5s --health-retries 10
     env:
       DJANGO_DEBUG: "1"
-      POSTGRES_PASSWORD: felicia
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
       PWNED_PASSWORDS_CHECK: "0"
     steps:
       - uses: actions/checkout@v4
@@ -33,6 +34,10 @@ jobs:
           cache: pip
       - name: System libraries for PDF generation
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libpango-1.0-0 libpangoft2-1.0-0 fonts-dejavu-core
+      - name: App database role without superuser rights (so row-level security is tested)
+        run: |
+          PGPASSWORD=felicia psql -h localhost -U felicia -d felicia -c \
+            "CREATE ROLE app LOGIN PASSWORD 'app' CREATEDB NOSUPERUSER NOBYPASSRLS;"
       - run: pip install -r requirements-dev.txt
       - name: Lint
         run: ruff check . && ruff format --check .
@@ -48,4 +53,4 @@ jobs:
           DJANGO_SECRET_KEY: ci-only-not-secret-ci-only-not-secret-ci-only-not-secret-1234
           DJANGO_ALLOWED_HOSTS: example.ch
           FIELD_ENCRYPTION_KEYS: 2LdNzt9Ks_9Y8hBzjbN8wl8W0r3uQTOZ8gbAgbYQqH0=
-        run: python manage.py check --deploy --fail-level WARNING
+        run: python manage.py check --deploy --database default --fail-level WARNING
