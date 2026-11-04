@@ -84,6 +84,8 @@ ACTION_LABELS = {
     "payments.assigned": "Zahlung zugeordnet",
     "api.key_created": "API-Schlüssel erstellt",
     "api.key_revoked": "API-Schlüssel widerrufen",
+    "standing.created": "Dauerauftrag angelegt",
+    "standing.updated": "Dauerauftrag geändert",
     "address.saved": "Adresse gespeichert",
     "address.deleted": "Adresse gelöscht",
 }

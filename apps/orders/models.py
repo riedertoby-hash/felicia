@@ -115,3 +115,84 @@ class OrderLine(models.Model):
 
     def __str__(self):
         return f"{self.quantity} × {self.product_name} {self.variant_name}"
+
+
+class StandingOrder(TimeStampedModel):
+    """Recurring order: the same items every week or every two weeks on a fixed delivery weekday."""
+
+    class Interval(models.IntegerChoices):
+        WEEKLY = 1, "Jede Woche"
+        BIWEEKLY = 2, "Alle 2 Wochen"
+        FOURWEEKLY = 4, "Alle 4 Wochen"
+
+    customer = models.ForeignKey("orgs.Organization", on_delete=models.CASCADE, related_name="standing_orders")
+    supplier = models.ForeignKey("orgs.Organization", on_delete=models.CASCADE, related_name="standing_orders_received")
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+")
+    name = models.CharField("Bezeichnung", max_length=80, blank=True, help_text="z.B. Gemüse Wochenstart")
+    option = models.ForeignKey(
+        "delivery.DeliveryOption", on_delete=models.PROTECT, related_name="+", verbose_name="Lieferart"
+    )
+    address = models.ForeignKey(
+        "customers.Address",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="+",
+        verbose_name="Lieferadresse",
+    )
+    interval_weeks = models.PositiveSmallIntegerField("Rhythmus", choices=Interval.choices, default=1)
+    first_date = models.DateField("Erste Lieferung")
+    end_date = models.DateField("Endet am", null=True, blank=True, help_text="Leer = unbefristet")
+    paused_until = models.DateField("Pausiert bis", null=True, blank=True)
+    skipped_dates = models.JSONField(default=list, blank=True)
+    note = models.CharField("Bemerkung für den Lieferanten", max_length=300, blank=True)
+    is_active = models.BooleanField(default=True)
+    last_generated_date = models.DateField(null=True, blank=True)
+    last_error = models.CharField(max_length=300, blank=True)
+
+    class Meta:
+        ordering = ["supplier__name", "first_date"]
+
+    def __str__(self):
+        return self.name or f"Dauerauftrag bei {self.supplier}"
+
+    def occurs_on(self, day):
+        if day < self.first_date or (self.end_date and day > self.end_date):
+            return False
+        return (day - self.first_date).days % (7 * self.interval_weeks) == 0
+
+    def upcoming(self, from_day, count=4):
+        """Next delivery dates from `from_day` on, with a flag whether they are skipped/paused."""
+        from datetime import timedelta
+
+        step = timedelta(weeks=self.interval_weeks)
+        day = self.first_date
+        if from_day > day:
+            periods = -(-(from_day - day).days // step.days)
+            day = day + step * periods
+        result = []
+        while len(result) < count and (not self.end_date or day <= self.end_date):
+            result.append({"date": day, "skipped": self.is_skipped(day)})
+            day += step
+        return result
+
+    def is_skipped(self, day):
+        return day.isoformat() in self.skipped_dates or bool(self.paused_until and day <= self.paused_until)
+
+    @property
+    def weekday_label(self):
+        return ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"][
+            self.first_date.weekday()
+        ]
+
+
+class StandingOrderItem(models.Model):
+    standing_order = models.ForeignKey(StandingOrder, on_delete=models.CASCADE, related_name="items")
+    variant = models.ForeignKey("catalog.Variant", on_delete=models.CASCADE, related_name="+")
+    quantity = models.DecimalField(max_digits=8, decimal_places=2)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["standing_order", "variant"], name="standing_item_unique")]
+
+    def __str__(self):
+        return f"{self.quantity} × {self.variant}"

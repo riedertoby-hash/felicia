@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Dauerauftrag{% endblock %}
+{% block content %}
+<div class="spread"><h1>Regelmässig bestellen</h1><a class="small" href="{% url 'orders:detail' order.pk %}">← Bestellung {{ order.number }}</a></div>
+<div class="grid two">
+  <div class="card">
+    <h2>{{ order.supplier.name }}</h2>
+    <p class="muted small">{{ order.delivery_name }}{% if option %} · {{ option.weekday_labels }}{% endif %}</p>
+    <ul class="plain small">{% for l in order.lines.all %}<li class="spread"><span>{{ l.quantity|floatformat:"-2" }} {{ l.unit }} {{ l.product_name }} {{ l.variant_name }}</span></li>{% endfor %}</ul>
+  </div>
+  {% if option %}
+  <form method="post" novalidate class="card">{% csrf_token %}
+    {% include "includes/form_fields.html" %}
+    <p class="small muted">Die Bestellung wird jeweils kurz vor dem Bestellschluss automatisch ausgelöst – bis dahin können Sie Mengen ändern oder einzelne Lieferungen auslassen. Es gelten die aktuellen Preise.</p>
+    <button type="submit">Dauerauftrag anlegen</button>
+  </form>
+  {% else %}
+  <div class="card"><p>Diese Lieferart gibt es nicht mehr. Bitte im Shop neu bestellen und dann daraus einen Dauerauftrag machen.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

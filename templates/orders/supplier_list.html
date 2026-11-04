@@ -2,7 +2,7 @@
 {% block title %}Bestellungen{% endblock %}
 {% block content %}
 <div class="spread"><h1>Bestellungen</h1>
-  <div class="row"><a class="btn" href="{% url 'supplier_orders:today' %}">Tagesübersicht</a><a class="btn ghost" href="{% url 'supplier_orders:export' %}">Export</a></div></div>
+  <div class="row"><a class="btn" href="{% url 'supplier_orders:today' %}">Tagesübersicht</a><a class="btn secondary" href="{% url 'supplier_orders:standing' %}">Daueraufträge</a><a class="btn ghost" href="{% url 'supplier_orders:export' %}">Export</a></div></div>
 {% if upcoming %}<div class="day-strip">{% for d in upcoming %}<a class="card link" href="{% url 'supplier_orders:day' d.delivery_date|date:'Y-m-d' %}"><strong>{{ d.delivery_date|date:"D j.n." }}</strong><br><span class="small muted">{{ d.n }} Bestellung{{ d.n|pluralize:"en" }} · CHF {{ d.total }}</span></a>{% endfor %}</div>{% endif %}
 <div class="spread mt">
   <nav class="tabs" aria-label="Ansicht">

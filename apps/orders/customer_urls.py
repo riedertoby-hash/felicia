@@ -1,6 +1,7 @@
 from django.urls import path
 
 from . import customer_views as views
+from . import standing_views
 
 app_name = "orders"
 urlpatterns = [
@@ -13,4 +14,7 @@ urlpatterns = [
     path("bestellungen/<int:pk>/", views.order_detail, name="detail"),
     path("bestellungen/<int:pk>/nochmals/", views.reorder, name="reorder"),
     path("bestellungen/<int:pk>/lieferschein.pdf", views.delivery_note, name="delivery_note"),
+    path("bestellungen/<int:order_pk>/dauerauftrag/", standing_views.create, name="standing_create"),
+    path("dauerauftraege/", standing_views.standing_list, name="standing_list"),
+    path("dauerauftraege/<int:pk>/", standing_views.detail, name="standing"),
 ]

@@ -114,6 +114,67 @@ def group_cart(customer, user, address=None, now=None):
     return groups
 
 
+def create_order(
+    *, customer, supplier, user, quote, date, address, items, note, checkout_id, request=None, source="shop"
+):
+    """Write one order with its lines and book stock. items: [(locked Variant, quantity)]."""
+    lines = [(v, q, (v.customer_price * q).quantize(CENT)) for v, q in items]
+    goods = sum((t for _, _, t in lines), Decimal("0"))
+    ship = address if address and not quote.option.is_pickup else None
+    order = Order.objects.create(
+        tenant=customer.tenant,
+        number=Order.next_number(customer.tenant),
+        checkout_id=checkout_id,
+        customer=customer,
+        supplier=supplier,
+        placed_by=user,
+        delivery_kind=quote.option.kind,
+        delivery_name=quote.option.name,
+        delivery_date=date,
+        ship_name=ship.recipient if ship else "",
+        ship_street=ship.street if ship else "",
+        ship_zip=ship.zip_code if ship else "",
+        ship_city=ship.city if ship else "",
+        ship_notes=ship.delivery_notes if ship else "",
+        customer_note=note,
+        goods_total=goods,
+        delivery_fee=quote.fee,
+        total=goods + quote.fee,
+        commission_percent=pricing.commission_for(supplier),
+    )
+    OrderLine.objects.bulk_create(
+        [
+            OrderLine(
+                order=order,
+                variant=v,
+                product_name=v.product.name,
+                variant_name=v.name,
+                unit=v.unit,
+                sku=v.sku,
+                temperature=v.product.temperature,
+                quantity=q,
+                unit_price=v.customer_price,
+                vat_rate=v.vat_rate,
+                line_total=t,
+            )
+            for v, q, t in lines
+        ]
+    )
+    for v, q, _ in lines:
+        if v.stock is not None:
+            v.stock -= q
+            v.save(update_fields=["stock"])
+    log(
+        "order.placed",
+        request=request,
+        actor=user,
+        organization=customer,
+        target=order,
+        changes={"lieferant": supplier.name, "total": str(order.total), "quelle": source},
+    )
+    return order
+
+
 @transaction.atomic
 def place_orders(*, request, customer, user, address, choices, note=""):
     """choices: {supplier_id: (option_id, date)}. Creates one order per supplier or raises ValidationError."""
@@ -140,59 +201,18 @@ def place_orders(*, request, customer, user, address, choices, note=""):
         if date not in quote.dates:
             raise ValidationError(f"{group.supplier.name}: Bitte einen gültigen Liefertermin wählen.")
         for item in group.items:
-            variant = locked[item.variant_id]
-            check_quantity(variant, item.quantity)
-        goods = group.goods_value
-        order = Order.objects.create(
-            tenant=customer.tenant,
-            number=Order.next_number(customer.tenant),
-            checkout_id=checkout_id,
+            check_quantity(locked[item.variant_id], item.quantity)
+        order = create_order(
             customer=customer,
             supplier=group.supplier,
-            placed_by=user,
-            delivery_kind=quote.option.kind,
-            delivery_name=quote.option.name,
-            delivery_date=date,
-            ship_name=address.recipient if address and not quote.option.is_pickup else "",
-            ship_street=address.street if address and not quote.option.is_pickup else "",
-            ship_zip=address.zip_code if address and not quote.option.is_pickup else "",
-            ship_city=address.city if address and not quote.option.is_pickup else "",
-            ship_notes=address.delivery_notes if address and not quote.option.is_pickup else "",
-            customer_note=note,
-            goods_total=goods,
-            delivery_fee=quote.fee,
-            total=goods + quote.fee,
-            commission_percent=pricing.commission_for(group.supplier),
-        )
-        OrderLine.objects.bulk_create(
-            [
-                OrderLine(
-                    order=order,
-                    variant=i.variant,
-                    product_name=i.variant.product.name,
-                    variant_name=i.variant.name,
-                    unit=i.variant.unit,
-                    sku=i.variant.sku,
-                    temperature=i.variant.product.temperature,
-                    quantity=i.quantity,
-                    unit_price=i.variant.customer_price,
-                    vat_rate=i.variant.vat_rate,
-                    line_total=i.line_total,
-                )
-                for i in group.items
-            ]
-        )
-        for item in group.items:
-            variant = locked[item.variant_id]
-            if variant.stock is not None:
-                variant.stock -= item.quantity
-                variant.save(update_fields=["stock"])
-        log(
-            "order.placed",
+            user=user,
+            quote=quote,
+            date=date,
+            address=address,
+            items=[(locked[i.variant_id], i.quantity) for i in group.items],
+            note=note,
+            checkout_id=checkout_id,
             request=request,
-            organization=customer,
-            target=order,
-            changes={"lieferant": group.supplier.name, "total": str(order.total)},
         )
         orders.append(order)
     CartItem.objects.filter(customer=customer, user=user).delete()

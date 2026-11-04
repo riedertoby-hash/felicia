@@ -1,5 +1,6 @@
 from django.urls import path
 
+from . import standing_views
 from . import supplier_views as views
 
 app_name = "supplier_orders"
@@ -7,6 +8,7 @@ urlpatterns = [
     path("", views.order_list, name="list"),
     path("alle-bestaetigen/", views.confirm_all, name="confirm_all"),
     path("export.csv", views.export_csv, name="export"),
+    path("dauerauftraege/", standing_views.supplier_list, name="standing"),
     path("tag/", views.day, name="today"),
     path("tag/<str:day>/", views.day, name="day"),
     path("tag/<str:day>/kommissionierliste.pdf", views.picking_pdf, name="picking_pdf"),

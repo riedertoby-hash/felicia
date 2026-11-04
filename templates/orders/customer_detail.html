@@ -9,5 +9,8 @@
     <a class="btn secondary" href="{% url 'orders:delivery_note' order.pk %}" target="_blank">Lieferschein (PDF)</a></div>
 </div>
 {% include "orders/partials/lines.html" %}
-<form method="post" action="{% url 'orders:reorder' order.pk %}" class="mt">{% csrf_token %}<button type="submit">Nochmals bestellen</button></form>
+<div class="actions mt">
+  <form method="post" action="{% url 'orders:reorder' order.pk %}">{% csrf_token %}<button type="submit">Nochmals bestellen</button></form>
+  <a class="btn secondary" href="{% url 'orders:standing_create' order.pk %}">Regelmässig bestellen</a>
+</div>
 {% endblock %}
