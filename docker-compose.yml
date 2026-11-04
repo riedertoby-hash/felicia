@@ -1,0 +1,61 @@
+# Production stack for one server (e.g. Infomaniak VPS / Public Cloud, Ubuntu 24.04).
+# Start:  docker compose up -d --build      Logs: docker compose logs -f web
+services:
+  caddy:
+    image: caddy:2.8
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+      - media:/srv/media:ro
+    depends_on: [web]
+
+  web:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - media:/app/media
+
+  scheduler:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    command: ["sh", "scripts/scheduler.sh"]
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - media:/app/media
+    healthcheck:
+      disable: true
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      # admin account only for setup and backups; the app uses its own restricted role
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_ADMIN_PASSWORD}
+      APP_DB_NAME: ${POSTGRES_DB}
+      APP_DB_USER: ${POSTGRES_USER}
+      APP_DB_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./deploy/db-init.sh:/docker-entrypoint-initdb.d/10-app-role.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+
+volumes:
+  pgdata:
+  media:
+  caddy_data:
+  caddy_config:

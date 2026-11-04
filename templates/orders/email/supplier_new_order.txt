@@ -1,0 +1,15 @@
+{% autoescape off %}Neue Bestellung {{ order.number }}
+
+Kunde: {{ order.customer.name }}{% if order.placed_by %} ({{ order.placed_by.get_full_name }}, {{ order.placed_by.email }}){% endif %}
+{{ order.delivery_name }} am {{ order.delivery_date|date:"l, j. F Y" }}{% if not order.is_pickup %}
+Lieferadresse: {{ order.ship_name }}, {{ order.ship_street }}, {{ order.ship_zip }} {{ order.ship_city }}{% if order.ship_notes %}
+Hinweis: {{ order.ship_notes }}{% endif %}{% endif %}
+
+{% for l in order.lines.all %}{{ l.quantity|floatformat:"-2" }} {{ l.unit }}  {{ l.product_name }} {{ l.variant_name }}{% if l.sku %} [{{ l.sku }}]{% endif %}  CHF {{ l.line_total }}
+{% endfor %}{% if order.delivery_fee %}Lieferung  CHF {{ order.delivery_fee }}
+{% endif %}Total CHF {{ order.total }}
+{% if order.customer_note %}
+Bemerkung des Kunden: {{ order.customer_note }}{% endif %}
+
+Bitte im Portal bestätigen.
+{% endautoescape %}

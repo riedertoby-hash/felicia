@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Daten importieren{% endblock %}
+{% block content %}
+<h1>Daten importieren</h1>
+<p class="muted">Lieferanten, Kunden oder Artikel aus dem bisherigen System übernehmen. Sie sehen zuerst eine Vorschau – gespeichert wird erst nach Ihrer Bestätigung.</p>
+<div class="grid two">
+  <form method="post" enctype="multipart/form-data" novalidate class="card">{% csrf_token %}
+    {% include "includes/form_fields.html" %}
+    <p class="small muted">Empfohlene Reihenfolge: 1. Lieferanten, 2. Kunden, 3. Artikel.</p>
+    <button type="submit">Vorschau anzeigen</button>
+  </form>
+  <div class="card small">
+    <h2>Welche Spalten werden erkannt?</h2>
+    <p class="muted">Die Spaltennamen müssen nicht exakt stimmen – gängige Bezeichnungen werden automatisch zugeordnet. Unbekannte Spalten werden ignoriert und in der Vorschau angezeigt.</p>
+    {% for label, fields in aliases.items %}
+      <details><summary><strong>{{ label }}</strong></summary>
+        <ul>{% for f, names in fields.items %}<li><code>{{ f }}</code>: {{ names|join:", " }}</li>{% endfor %}</ul>
+      </details>
+    {% endfor %}
+  </div>
+</div>
+{% if batches %}
+<h2 class="mt">Bisherige Importe</h2>
+<div class="table-wrap"><table>
+  <thead><tr><th>Datum</th><th>Art</th><th>Datei</th><th>Neu</th><th>Aktualisiert</th><th>Übersprungen</th><th>Einladungen</th></tr></thead>
+  <tbody>{% for b in batches %}<tr><td><a href="{% url 'imports:batch' b.pk %}">{{ b.created_at|date:"d.m.Y H:i" }}</a></td><td>{{ b.get_kind_display }}</td><td class="small">{{ b.filename }}</td><td>{{ b.created_count }}</td><td>{{ b.updated_count }}</td><td>{{ b.skipped_count }}</td><td class="small">{% if b.kind == "products" %}–{% elif b.invitations_sent_at %}{{ b.invitations_sent_at|date:"d.m.Y" }}{% else %}noch nicht{% endif %}</td></tr>{% endfor %}</tbody>
+</table></div>
+{% endif %}
+{% endblock %}

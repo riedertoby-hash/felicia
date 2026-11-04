@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Provisionen{% endblock %}
+{% block content %}
+<div class="spread"><h1>Provisionsrechnungen</h1><div class="row"><a class="btn" href="{% url 'billing:payments' %}">Zahlungen einlesen</a><a class="btn secondary" href="{% url 'billing:operator_issuer' %}">Rechnungsdaten</a></div></div>
+{% if not issuer_ready %}<div class="msg warning">Bitte zuerst <a href="{% url 'billing:operator_issuer' %}">Rechnungsdaten und IBAN</a> erfassen, damit Rechnungen einen QR-Zahlteil haben.</div>{% endif %}
+<div class="grid">
+  <div class="card"><div class="muted small">Offen</div><div class="stat">CHF {{ open_total }}</div></div>
+  <div class="card"><h2>Periode {{ period_label }}</h2><p class="small muted">Wird täglich automatisch erstellt, sobald die Periode abgeschlossen ist. Bereits verrechnete Lieferanten werden übersprungen.</p>
+    <form method="post" action="{% url 'billing:operator_run' %}">{% csrf_token %}<button type="submit">Jetzt erstellen</button></form></div>
+</div>
+<div class="mt">{% include "billing/partials/status_tabs.html" %}</div>
+{% include "billing/partials/invoice_rows.html" with party_label="Lieferant (Empfänger)" detail_url="billing:operator_invoice" can_manage=True %}
+{% endblock %}

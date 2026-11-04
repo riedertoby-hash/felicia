@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Warenkorb{% endblock %}
+{% block content %}
+<div class="spread"><h1>Warenkorb</h1><a class="small" href="{% url 'shop:index' %}">← Weiter einkaufen</a></div>
+{% if not groups %}
+  <div class="card"><p>Ihr Warenkorb ist leer.</p><a class="btn" href="{% url 'shop:index' %}">Zum Shop</a>{% if "shop.order" in org_perms %} <a class="btn secondary" href="{% url 'orders:list' %}">Frühere Bestellung wiederholen</a>{% endif %}</div>
+{% else %}
+<form method="get" class="card row">
+  <label for="adresse">Lieferadresse</label>
+  <select id="adresse" name="adresse" data-autosubmit>
+    {% for a in addresses %}<option value="{{ a.pk }}" {% if address and a.pk == address.pk %}selected{% endif %}>{{ a.label }}: {{ a.street }}, {{ a.zip_code }} {{ a.city }}</option>{% endfor %}
+    <option value="abholung" {% if not address %}selected{% endif %}>Ich hole alles selbst ab</option>
+  </select>
+  <noscript><button type="submit" class="secondary">Übernehmen</button></noscript>
+  {% if not addresses %}<a class="small" href="{% url 'customers:address_new' %}">Lieferadresse erfassen</a>{% endif %}
+</form>
+
+<form method="post" action="{% url 'orders:checkout' %}" class="stack mt">{% csrf_token %}
+  <input type="hidden" name="adresse" value="{% if address %}{{ address.pk }}{% else %}abholung{% endif %}">
+  {% for g in groups %}
+  <section class="card">
+    <h2>{{ g.supplier.name }}</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Artikel</th><th>Menge</th><th>Preis</th><th>Total</th><th></th></tr></thead>
+      <tbody>{% for i in g.items %}
+        <tr>
+          <td>{{ i.variant.product.name }} <span class="muted small">{{ i.variant.name }}</span></td>
+          <td><form method="post" action="{% url 'orders:update_item' i.pk %}" class="qty-form">{% csrf_token %}
+            <input type="hidden" name="adresse" value="{% if address %}{{ address.pk }}{% else %}abholung{% endif %}">
+            <input type="number" name="quantity" value="{{ i.quantity|floatformat:'-2' }}" min="0" step="{{ i.variant.qty_step|floatformat:'-2' }}" aria-label="Menge" data-autosubmit> <span class="small muted">{{ i.variant.unit }}</span></form></td>
+          <td>CHF {{ i.variant.customer_price }}</td>
+          <td><strong>CHF {{ i.line_total }}</strong></td>
+          <td><form method="post" action="{% url 'orders:remove_item' i.pk %}">{% csrf_token %}<input type="hidden" name="adresse" value="{% if address %}{{ address.pk }}{% else %}abholung{% endif %}"><button type="submit" class="ghost small" aria-label="Entfernen">✕</button></form></td>
+        </tr>
+      {% endfor %}</tbody>
+    </table></div>
+    {% for e in g.errors %}<div class="msg error mt-s">{{ e }}</div>{% endfor %}
+    {% if g.quotes %}
+    <fieldset class="mt"><legend>Lieferung</legend>
+      <div class="choices">
+      {% for q in g.quotes %}
+        <label><input type="radio" name="option_{{ g.supplier.pk }}" value="{{ q.option.pk }}" {% if forloop.first %}checked{% endif %} {% if not q.ok %}disabled{% endif %}>
+          <span><strong>{{ q.option.name }}</strong> · {% if q.fee %}CHF {{ q.fee }}{% else %}gratis{% endif %}
+          {% if q.missing_to_minimum %}<br><span class="small error-text">Mindestbestellwert CHF {{ q.min_order_value }} – es fehlen CHF {{ q.missing_to_minimum }}</span>{% endif %}
+          {% if not q.dates %}<br><span class="small error-text">Zurzeit keine Termine</span>{% endif %}
+          {% if q.option.notes %}<br><span class="small muted">{{ q.option.notes }}</span>{% endif %}</span></label>
+      {% endfor %}
+      </div>
+      {% with q=g.quotes.0 %}
+      <div class="field mt-s"><label for="date_{{ g.supplier.pk }}">Termin</label>
+        <select id="date_{{ g.supplier.pk }}" name="date_{{ g.supplier.pk }}">
+          {% for q2 in g.quotes %}{% for d in q2.dates %}<option value="{{ d|date:'Y-m-d' }}" data-option="{{ q2.option.pk }}">{{ d|date:"l, j. F" }}{% if g.quotes|length > 1 %} ({{ q2.option.name }}){% endif %}</option>{% endfor %}{% endfor %}
+        </select></div>
+      {% endwith %}
+    </fieldset>
+    {% endif %}
+    <p class="right">Warenwert <strong>CHF {{ g.goods_value }}</strong></p>
+  </section>
+  {% endfor %}
+  <div class="card">
+    <div class="field"><label for="note">Bemerkung (optional)</label><textarea id="note" name="note" rows="2" placeholder="z.B. bitte beim Hintereingang abladen"></textarea></div>
+    <div class="spread"><span>Total Warenwert <strong>CHF {{ grand_total }}</strong> <span class="small muted">zzgl. allfällige Liefergebühren, Rechnung durch die Lieferanten</span></span>
+    <button type="submit">Verbindlich bestellen</button></div>
+  </div>
+</form>
+{% endif %}
+{% endblock %}

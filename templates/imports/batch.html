@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Import{% endblock %}
+{% block content %}
+<div class="spread"><h1>Import {{ batch.get_kind_display }} · {{ batch.created_at|date:"d.m.Y H:i" }}</h1><a class="small" href="{% url 'imports:upload' %}">← Importe</a></div>
+<p>{{ batch.created_count }} neu{% if batch.updated_count %}, {{ batch.updated_count }} aktualisiert{% endif %}, {{ batch.skipped_count }} übersprungen · Datei {{ batch.filename }}</p>
+{% if batch.kind != "products" %}
+<div class="card">
+  {% if batch.invitations_sent_at %}<p>Einladungen verschickt am {{ batch.invitations_sent_at|date:"d.m.Y H:i" }}.</p>{% endif %}
+  <form method="post" action="{% url 'imports:batch_invite' batch.pk %}" data-confirm="Allen Betrieben dieses Imports, die noch keinen Zugang haben, jetzt eine Einladung senden?">{% csrf_token %}<button type="submit">Einladungen senden</button></form>
+  <p class="small muted mt-s">Geht nur an Betriebe mit E-Mail-Adresse, ohne Benutzer und ohne offene Einladung. Mehrfaches Klicken ist unbedenklich.</p>
+</div>
+{% endif %}
+<div class="table-wrap mt"><table>
+  <thead><tr><th>Name</th><th>Benutzer</th><th></th></tr></thead>
+  <tbody>{% for o in orgs %}<tr><td>{% if o.kind == "supplier" %}<a href="{% url 'operator:supplier' o.pk %}">{{ o.name }}</a>{% else %}{{ o.name }}{% endif %}</td><td>{{ o.memberships.all|length }}</td>
+    <td>{% if o.kind != "supplier" or batch.kind == "products" %}{% endif %}{% if not o.memberships.all and batch.kind != "products" %}{% include "imports/partials/invite_form.html" with org=o %}{% endif %}</td></tr>{% endfor %}</tbody>
+</table></div>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Einladung{% endblock %}
+{% block main_class %}narrow{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Einladung zu {{ invitation.organization.name }}</h1>
+  <p>Rolle: <strong>{{ invitation.role.name }}</strong> – {{ invitation.role.description }}</p>
+  {% if user.email|lower != invitation.email %}
+    <div class="msg error">Diese Einladung gilt für {{ invitation.email }}. Sie sind als {{ user.email }} angemeldet.</div>
+  {% else %}
+    <form method="post">{% csrf_token %}<button type="submit">Einladung annehmen</button></form>
+  {% endif %}
+</div>
+{% endblock %}

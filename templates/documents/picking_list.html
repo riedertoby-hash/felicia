@@ -1,0 +1,14 @@
+{% extends "documents/base.html" %}
+{% block title %}Kommissionierliste{% endblock %}
+{% block body %}
+<h1>Kommissionierliste {% if day %}{{ day|date:"l, d.m.Y" }}{% else %}neue Bestellungen{% endif %}</h1>
+<p class="muted">{{ supplier.name }} · {{ orders|length }} Bestellung{{ orders|length|pluralize:"en" }}</p>
+{% for temp, rows in picking.items %}
+<div class="temp">{{ temp }}</div>
+<table class="lines"><thead><tr><th>✓</th><th>Menge total</th><th>Artikel</th><th>Art.-Nr.</th><th class="r">Bestellungen</th></tr></thead>
+<tbody>{% for r in rows %}<tr><td><span class="check"></span></td><td><strong>{{ r.quantity|floatformat:"-2" }} {{ r.unit }}</strong></td><td>{{ r.product }} {{ r.variant }}</td><td class="small">{{ r.sku }}</td><td class="r">{{ r.orders }}</td></tr>{% endfor %}</tbody></table>
+{% endfor %}
+<h2>Pro Bestellung</h2>
+<table class="lines"><thead><tr><th>Nr.</th><th>Kunde</th><th>Lieferart</th><th>Artikel</th></tr></thead>
+<tbody>{% for o in orders %}<tr><td>{{ o.number }}</td><td>{{ o.customer.name }}</td><td class="small">{{ o.delivery_name }}{% if not o.is_pickup %}<br>{{ o.ship_zip }} {{ o.ship_city }}{% endif %}{% if not day %}<br>{{ o.delivery_date|date:"D d.m." }}{% endif %}</td><td class="small">{% for l in o.lines.all %}{{ l.quantity|floatformat:"-2" }} {{ l.unit }} {{ l.product_name }} {{ l.variant_name }}<br>{% endfor %}</td></tr>{% endfor %}</tbody></table>
+{% endblock %}

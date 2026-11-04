@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Lieferzone{% endblock %}
+{% block content %}
+<div class="spread"><h1>{% if zone.pk %}{{ zone.name }}{% else %}Neue Zone{% endif %} <span class="muted small">· {{ option.name }}</span></h1><a class="small" href="{% url 'delivery:overview' %}">← Zurück</a></div>
+<form method="post" novalidate class="card w-md">{% csrf_token %}
+  {{ form.non_field_errors }}
+  {% include "includes/field.html" with field=form.name %}
+  {% include "includes/field.html" with field=form.zip_codes %}
+  <details {% if form.cantons.value %}open{% endif %}><summary class="small">Ganze Kantone beliefern</summary>{% include "includes/field.html" with field=form.cantons %}</details>
+  {% include "includes/field.html" with field=form.min_order_value %}
+  <fieldset class="mt"><legend>Liefergebühr nach Warenwert</legend>
+    <p class="small muted">Beispiel: ab 0 → 15.00, ab 100 → 8.00, ab 200 → 0.00 (gratis). Keine Zeile = immer gratis.</p>
+    {{ tiers.management_form }}{{ tiers.non_form_errors }}
+    <div class="table-wrap"><table>
+      <thead><tr><th>Ab Warenwert (CHF)</th><th>Gebühr (CHF)</th><th>Entfernen</th></tr></thead>
+      <tbody>{% for t in tiers %}<tr>{% for h in t.hidden_fields %}{{ h }}{% endfor %}<td>{{ t.from_value }}{{ t.from_value.errors }}</td><td>{{ t.fee }}{{ t.fee.errors }}</td><td>{% if t.instance.pk %}{{ t.DELETE }}{% endif %}</td></tr>{% endfor %}</tbody>
+    </table></div>
+    <p class="small muted">Für weitere Stufen speichern – es erscheint jeweils eine neue leere Zeile.</p>
+  </fieldset>
+  <button type="submit">Speichern</button>
+</form>
+{% if zone.pk %}<form method="post" action="{% url 'delivery:zone_delete' option.pk zone.pk %}" class="mt" data-confirm="Zone löschen?">{% csrf_token %}<button type="submit" class="danger">Zone löschen</button></form>{% endif %}
+{% endblock %}

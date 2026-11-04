@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Artikel{% endblock %}
+{% block content %}
+<div class="spread">
+  <h1>Artikel</h1>
+  <div class="row">
+    {% if can_edit %}<a class="btn" href="{% url 'catalog:new' %}">Neuer Artikel</a>
+    <a class="btn secondary" href="{% url 'catalog:csv' %}">CSV-Import</a>{% endif %}
+    <a class="btn ghost" href="{% url 'catalog:csv_export' %}">Export</a>
+  </div>
+</div>
+{% if current_org.status == "pending" %}<div class="msg warning">Ihre Artikel erscheinen im Shop, sobald der Betreiber Ihr Konto freigeschaltet hat.</div>{% endif %}
+<form class="filters" method="get">
+  <input type="search" name="q" value="{{ q }}" placeholder="Name oder Artikelnummer" aria-label="Suche">
+  <select name="status" data-autosubmit aria-label="Status">
+    <option value="">Alle</option><option value="active" {% if status == "active" %}selected{% endif %}>Im Shop</option><option value="inactive" {% if status == "inactive" %}selected{% endif %}>Ausgeblendet</option>
+  </select>
+  <button type="submit" class="secondary">Suchen</button>
+</form>
+<div class="table-wrap"><table>
+  <thead><tr><th>Artikel</th><th>Kategorie</th><th>Varianten</th><th>ab Kundenpreis</th><th>Im Shop</th><th></th></tr></thead>
+  <tbody>
+  {% for p in page %}
+    <tr>
+      <td><a href="{% url 'catalog:edit' p.pk %}">{{ p.name }}</a></td>
+      <td class="small">{{ p.category|default:"–" }}</td>
+      <td>{{ p.variant_count }}</td>
+      <td>{% if p.min_price %}CHF {{ p.min_price }}{% else %}–{% endif %}</td>
+      <td>{% include "catalog/partials/toggle.html" %}</td>
+      <td><a class="btn ghost" href="{% url 'catalog:edit' p.pk %}">{% if can_edit %}Bearbeiten{% else %}Ansehen{% endif %}</a></td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="6" class="muted">Noch keine Artikel. {% if can_edit %}<a href="{% url 'catalog:new' %}">Ersten Artikel erfassen</a> oder <a href="{% url 'catalog:csv' %}">per CSV importieren</a>.{% endif %}</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% include "includes/pagination.html" %}
+<p class="small muted mt">Provision des Marktplatzes: {{ commission|floatformat:"-2" }} % vom Kundenpreis.</p>
+{% endblock %}

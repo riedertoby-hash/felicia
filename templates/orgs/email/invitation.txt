@@ -1,0 +1,8 @@
+Guten Tag
+
+{{ inviter.get_full_name|default:inviter.email }} lädt Sie ein, bei «{{ invitation.organization.name }}» als {{ invitation.role.name }} mitzuarbeiten.
+
+Einladung annehmen:
+{{ link }}
+
+Der Link ist bis {{ invitation.expires_at|date:"d.m.Y H:i" }} gültig. Falls Sie diese Einladung nicht erwartet haben, können Sie diese E-Mail ignorieren.

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Import prüfen{% endblock %}
+{% block content %}
+<h1>Vorschau: {{ rows|length }} Zeile{{ rows|length|pluralize:"n" }}</h1>
+{% if has_errors %}
+  <div class="msg error">{{ error_count }} Zeile{{ error_count|pluralize:"n" }} mit Fehlern. Bitte in der Datei korrigieren und <a href="{% url 'catalog:csv' %}">erneut hochladen</a>. Es wurde nichts gespeichert.</div>
+{% else %}
+  <form method="post" action="{% url 'catalog:csv_confirm' %}" class="actions">{% csrf_token %}
+    <button type="submit">Jetzt {{ rows|length }} Zeilen importieren</button>
+    <a class="btn secondary" href="{% url 'catalog:csv' %}">Abbrechen</a>
+  </form>
+{% endif %}
+<div class="table-wrap mt"><table>
+  <thead><tr><th>Zeile</th><th>Artikel</th><th>Variante</th><th>Preis</th><th>Kategorie</th><th>Aktion</th><th>Fehler</th></tr></thead>
+  <tbody>{% for r in rows %}
+    <tr class="{% if r.errors %}row-error{% endif %}"><td>{{ r.line }}</td><td>{{ r.data.name }}</td><td>{{ r.data.variant }}</td>
+      <td>{% if r.data.price %}CHF {{ r.data.price }}{% endif %}</td><td>{{ r.data.category|default:"" }}</td>
+      <td>{% if not r.errors %}<span class="badge {% if r.action == 'neu' %}ok{% endif %}">{{ r.action }}</span>{% endif %}</td>
+      <td class="small">{{ r.errors|join:"; " }}</td></tr>
+  {% endfor %}</tbody>
+</table></div>
+{% endblock %}

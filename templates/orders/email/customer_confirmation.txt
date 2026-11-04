@@ -1,0 +1,12 @@
+{% autoescape off %}Guten Tag
+
+Vielen Dank für Ihre Bestellung. Wir haben sie an folgende Lieferanten weitergeleitet:
+{% for o in orders %}
+{{ o.number }} · {{ o.supplier.name }}
+  {{ o.delivery_name }} am {{ o.delivery_date|date:"l, j. F Y" }}
+{% for l in o.lines.all %}  {{ l.quantity|floatformat:"-2" }} {{ l.unit }} {{ l.product_name }} {{ l.variant_name }} – CHF {{ l.line_total }}
+{% endfor %}{% if o.delivery_fee %}  Lieferung – CHF {{ o.delivery_fee }}
+{% endif %}  Total CHF {{ o.total }}
+{% endfor %}
+Die Rechnung erhalten Sie direkt vom jeweiligen Lieferanten.
+{% endautoescape %}

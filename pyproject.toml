@@ -1,0 +1,22 @@
+[project]
+name = "felicia"
+version = "0.1.0"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.test_settings"
+python_files = ["test_*.py"]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+extend-exclude = ["**/migrations/*"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "S", "UP", "DJ"]
+ignore = ["S101", "S105", "S106", "DJ001"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S"]

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Daueraufträge{% endblock %}
+{% block content %}
+<h1>Daueraufträge</h1>
+{% if not standing_orders %}
+<div class="card"><p>Noch keine Daueraufträge.</p><p class="muted small">Öffnen Sie eine frühere Bestellung und wählen Sie «Regelmässig bestellen».</p><a class="btn secondary" href="{% url 'orders:list' %}">Zu meinen Bestellungen</a></div>
+{% endif %}
+<div class="grid">
+{% for s in standing_orders %}
+  <a class="card link" href="{% url 'orders:standing' s.pk %}">
+    <h2>{{ s }}{% if not s.is_active %} <span class="badge">beendet</span>{% elif s.paused_until %} <span class="badge pending">pausiert bis {{ s.paused_until|date:"d.m." }}</span>{% endif %}</h2>
+    <p class="small muted">{{ s.supplier.name }} · {{ s.get_interval_weeks_display }} am {{ s.weekday_label }}</p>
+    {% if s.next_dates %}<p class="small">Nächste: {% for d in s.next_dates %}{% if d.skipped %}<s>{{ d.date|date:"d.m." }}</s>{% else %}{{ d.date|date:"d.m." }}{% endif %}{% if not forloop.last %}, {% endif %}{% endfor %}</p>{% endif %}
+    {% if s.last_error %}<p class="small error-text">Letzte Lieferung nicht bestellt: {{ s.last_error }}</p>{% endif %}
+  </a>
+{% endfor %}
+</div>
+{% endblock %}

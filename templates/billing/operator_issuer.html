@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Rechnungsdaten{% endblock %}
+{% block content %}
+<div class="spread"><h1>Rechnungsdaten des Marktplatzes</h1><a class="small" href="{% url 'billing:operator_invoices' %}">← Provisionen</a></div>
+<form method="post" novalidate class="card w-md">{% csrf_token %}
+  {% if settings.iban %}<p class="small">IBAN aktuell: <strong>{{ settings.iban|slice:":4" }} •••• {{ settings.iban|slice:"-4:" }}</strong> – Feld leer lassen, um sie zu behalten.</p>{% endif %}
+  {% include "includes/form_fields.html" %}
+  <button type="submit">Speichern</button>
+</form>
+{% endblock %}

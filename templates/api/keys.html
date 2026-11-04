@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Schnittstelle (API){% endblock %}
+{% block content %}
+<h1>Schnittstelle (API)</h1>
+<p class="muted">Für Ihre Warenwirtschaft oder Lager-Software: Bestellungen abholen, Status melden, Bestand und Preise abgleichen.</p>
+{% if new_key %}
+<div class="msg warning"><strong>Ihr neuer Schlüssel – nur jetzt sichtbar, bitte sicher speichern:</strong><br><code class="codes">{{ new_key }}</code></div>
+{% endif %}
+<div class="grid two">
+  <form method="post" novalidate class="card">{% csrf_token %}
+    <h2>Neuer Schlüssel</h2>
+    {% include "includes/form_fields.html" %}
+    <button type="submit">Schlüssel erstellen</button>
+  </form>
+  <div class="card small">
+    <h2>So funktioniert's</h2>
+    <p>Jede Anfrage mit Kopfzeile <code>Authorization: Bearer fel_…</code> an <code>{{ base_url }}</code></p>
+    <table class="compact"><tbody>
+      <tr><td><code>GET orders</code></td><td>Bestellungen (Filter: <code>status</code>, <code>since</code>, <code>delivery_date</code>, <code>page</code>)</td></tr>
+      <tr><td><code>GET orders/&lt;Nr&gt;</code></td><td>Eine Bestellung</td></tr>
+      <tr><td><code>POST orders/&lt;Nr&gt;/status</code></td><td><code>{"status": "confirmed"}</code> · confirmed, packed, delivered, cancelled</td></tr>
+      <tr><td><code>GET products</code></td><td>Artikel mit Preisen und Bestand</td></tr>
+      <tr><td><code>PATCH variants/&lt;Art.-Nr&gt;</code></td><td><code>{"stock": 12}</code> oder <code>{"customer_price": "9.50"}</code></td></tr>
+      <tr><td><code>GET invoices</code></td><td>Ihre Rechnungen an Kunden</td></tr>
+    </tbody></table>
+    <p class="muted">Max. 120 Anfragen pro Minute. Für sofortige Meldungen neuer Bestellungen gibt es zusätzlich den Webhook unter Einstellungen → Benachrichtigungen.</p>
+  </div>
+</div>
+<h2 class="mt">Schlüssel</h2>
+<div class="table-wrap"><table>
+  <thead><tr><th>Bezeichnung</th><th>Beginnt mit</th><th>Rechte</th><th>Erstellt</th><th>Zuletzt benutzt</th><th></th></tr></thead>
+  <tbody>{% for k in keys %}
+    <tr><td>{{ k.name }}</td><td><code>{{ k.prefix }}…</code></td><td class="small">{% for s in k.scopes %}{% for code, label in scope_labels.items %}{% if code == s %}{{ label }}{% endif %}{% endfor %}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
+      <td class="small">{{ k.created_at|date:"d.m.Y" }}{% if k.created_by %}<br>{{ k.created_by }}{% endif %}</td><td class="small">{{ k.last_used_at|date:"d.m.Y H:i"|default:"nie" }}</td>
+      <td>{% if k.revoked_at %}<span class="badge">widerrufen</span>{% else %}<form method="post" action="{% url 'api:revoke' k.pk %}" data-confirm="Schlüssel «{{ k.name }}» widerrufen? Systeme damit verlieren sofort den Zugriff.">{% csrf_token %}<button type="submit" class="danger small">Widerrufen</button></form>{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="6" class="muted">Noch keine Schlüssel.</td></tr>{% endfor %}</tbody>
+</table></div>
+{% endblock %}

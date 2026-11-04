@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Lieferung{% endblock %}
+{% block content %}
+<div class="spread"><h1>Lieferung &amp; Abholung</h1>{% if can_edit %}<a class="btn" href="{% url 'delivery:option_new' %}">Neue Lieferart</a>{% endif %}</div>
+{% if not options %}<div class="msg warning">Noch keine Lieferart erfasst. Ohne Lieferart können Kunden nicht bei Ihnen bestellen.</div>{% endif %}
+<div class="stack">
+{% for o in options %}
+  <div class="card">
+    <div class="spread">
+      <h2>{{ o.name }} <span class="badge {% if o.is_active %}ok{% endif %}">{{ o.get_kind_display }}</span>{% if not o.is_active %} <span class="badge">inaktiv</span>{% endif %}</h2>
+      {% if can_edit %}<a class="btn secondary" href="{% url 'delivery:option_edit' o.pk %}">Bearbeiten</a>{% endif %}
+    </div>
+    <p class="small muted">{{ o.weekday_labels|default:"Keine Tage gewählt" }} · Bestellschluss {{ o.cutoff_time|time:"H:i" }} · mind. {{ o.lead_days }} Tag{{ o.lead_days|pluralize:"e" }} Vorlauf{% if o.carrier_name %} · Partner: {{ o.carrier_name }}{% endif %}</p>
+    {% if not o.is_pickup %}
+      <div class="table-wrap"><table>
+        <thead><tr><th>Zone</th><th>Gebiet</th><th>Mindestbestellwert</th><th>Liefergebühr</th><th></th></tr></thead>
+        <tbody>{% for z in o.zones.all %}
+          <tr><td>{{ z.name }}</td><td class="small">{{ z.zip_codes }}{% if z.cantons %} {{ z.cantons|join:", " }}{% endif %}</td>
+            <td>CHF {{ z.min_order_value }}</td>
+            <td class="small">{% for t in z.fee_tiers.all %}ab CHF {{ t.from_value }}: {% if t.fee %}CHF {{ t.fee }}{% else %}gratis{% endif %}{% if not forloop.last %}<br>{% endif %}{% empty %}gratis{% endfor %}</td>
+            <td>{% if can_edit %}<a class="btn ghost" href="{% url 'delivery:zone_edit' o.pk z.pk %}">Bearbeiten</a>{% endif %}</td></tr>
+        {% empty %}<tr><td colspan="5" class="muted">Keine Zone – diese Lieferart ist noch nicht nutzbar.</td></tr>{% endfor %}</tbody>
+      </table></div>
+      {% if can_edit %}<a class="btn ghost mt-s" href="{% url 'delivery:zone_new' o.pk %}">+ Zone hinzufügen</a>{% endif %}
+    {% endif %}
+  </div>
+{% endfor %}
+</div>
+{% endblock %}

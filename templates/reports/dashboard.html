@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}Auswertung{% endblock %}
+{% block content %}
+<div class="spread"><h1>Auswertung · {{ period.label }}</h1></div>
+<form method="get" class="filters">
+  <select name="zeitraum" data-autosubmit aria-label="Zeitraum">{% for k, l in choices %}<option value="{{ k }}" {% if k == period.key %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+  <input type="date" name="von" value="{{ period.start|date:'Y-m-d' }}" aria-label="Von" data-show-if="zeitraum=frei">
+  <input type="date" name="bis" value="{{ period.end|date:'Y-m-d' }}" aria-label="Bis" data-show-if="zeitraum=frei">
+  <button type="submit" class="secondary">Anzeigen</button>
+</form>
+<div class="grid">
+  <div class="card"><div class="muted small">Warenumsatz</div><div class="stat">CHF {{ kpi.goods|floatformat:"0g" }}</div></div>
+  <div class="card"><div class="muted small">Bestellungen</div><div class="stat">{{ kpi.orders }}</div><div class="small muted">Ø CHF {{ kpi.average }} · {{ kpi.customers }} Kunde{{ kpi.customers|pluralize:"n" }}</div></div>
+  <div class="card"><div class="muted small">{% if is_operator %}Provisionen{% else %}Provision an den Marktplatz{% endif %}</div><div class="stat">CHF {{ kpi.commission|floatformat:"0g" }}</div></div>
+  <div class="card"><div class="muted small">Offene Rechnungen</div><div class="stat">CHF {{ open.s|default:0|floatformat:"0g" }}</div><div class="small muted">{{ open.n }} Rechnung{{ open.n|pluralize:"en" }}</div></div>
+</div>
+
+<div class="card mt">
+  <h2>Umsatz pro Monat</h2>
+  {% with n=chart|length %}
+  <svg class="chart" viewBox="0 0 {% widthratio n 1 60 %} 180" role="img" aria-label="Warenumsatz pro Monat">
+    {% for b in chart %}
+      <g transform="translate({% widthratio forloop.counter0 1 60 %},0)">
+        <rect x="8" y="{% widthratio b.pct 100 -140 %}" width="44" height="{% widthratio b.pct 100 140 %}" class="bar" transform="translate(0,150)"><title>{{ b.month|date:"F Y" }}: CHF {{ b.value }}</title></rect>
+        <text x="30" y="170" class="bar-label">{{ b.month|date:"M" }}</text>
+      </g>
+    {% endfor %}
+  </svg>
+  {% endwith %}
+</div>
+
+<div class="grid two mt">
+  <div class="card"><h2>Top-Artikel</h2>
+    <table class="compact"><tbody>{% for p in products %}<tr><td>{{ p.product_name }} <span class="small muted">{{ p.variant_name }}</span></td><td class="small">{{ p.qty|floatformat:"-2" }} {{ p.unit }}</td><td class="right">CHF {{ p.revenue|floatformat:"0g" }}</td></tr>{% empty %}<tr><td class="muted">Keine Daten.</td></tr>{% endfor %}</tbody></table></div>
+  <div class="card"><h2>Top-Kunden</h2>
+    <table class="compact"><tbody>{% for c in customers %}<tr><td>{{ c.customer__name }}</td><td class="small">{{ c.n }}×</td><td class="right">CHF {{ c.revenue|floatformat:"0g" }}</td></tr>{% empty %}<tr><td class="muted">Keine Daten.</td></tr>{% endfor %}</tbody></table></div>
+</div>
+
+{% if is_operator %}
+<div class="card mt"><h2>Pro Lieferant</h2>
+  <div class="table-wrap"><table><thead><tr><th>Lieferant</th><th>Bestellungen</th><th>Umsatz</th><th>Provision</th></tr></thead>
+  <tbody>{% for s in suppliers %}<tr><td>{{ s.supplier__name }}</td><td>{{ s.n }}</td><td>CHF {{ s.revenue|floatformat:"2g" }}</td><td>CHF {{ s.commission|floatformat:"2g" }}</td></tr>{% empty %}<tr><td colspan="4" class="muted">Keine Daten.</td></tr>{% endfor %}</tbody></table></div>
+</div>
+{% endif %}
+
+<div class="card mt">
+  <h2>Export für die Buchhaltung</h2>
+  <p class="small muted">CSV-Dateien für den gewählten Zeitraum – öffnen direkt in Excel, importierbar in Bexio oder Abacus. Kontonummern unter Einstellungen → Rechnungsstellung.</p>
+  <div class="actions">
+    <a class="btn secondary" href="{% url 'reports:export' 'journal' %}?{{ period.query }}">Buchungsjournal</a>
+    <a class="btn secondary" href="{% url 'reports:export' 'rechnungen' %}?{{ period.query }}">Rechnungsliste</a>
+    <a class="btn secondary" href="{% url 'reports:export' 'umsatz' %}?{{ period.query }}">Umsatz pro Artikel</a>
+  </div>
+</div>
+{% endblock %}

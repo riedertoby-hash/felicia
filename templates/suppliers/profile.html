@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Profil{% endblock %}
+{% block content %}
+<h1>Profil</h1>
+{% if not can_edit %}<div class="msg warning">Nur ansehen – Ihre Rolle erlaubt keine Änderungen.</div>{% endif %}
+<form method="post" enctype="multipart/form-data" novalidate class="card w-lg">{% csrf_token %}
+  {{ form.non_field_errors }}
+  <fieldset><legend>Auftritt im Shop</legend>
+    {% include "includes/field.html" with field=form.name %}
+    {% include "includes/field.html" with field=form.description %}
+    <div class="form-grid">{% include "includes/field.html" with field=form.logo %}{% include "includes/field.html" with field=form.website %}</div>
+  </fieldset>
+  <fieldset><legend>Firma &amp; Kontakt</legend>
+    <div class="form-grid">
+      {% include "includes/field.html" with field=form.legal_name %}{% include "includes/field.html" with field=form.contact_email %}
+      {% include "includes/field.html" with field=form.phone %}{% include "includes/field.html" with field=form.street %}
+      {% include "includes/field.html" with field=form.zip_code %}{% include "includes/field.html" with field=form.city %}
+      {% include "includes/field.html" with field=form.canton %}
+    </div>
+  </fieldset>
+  <fieldset><legend>MWST</legend>
+    {% include "includes/field.html" with field=form.vat_registered %}{% include "includes/field.html" with field=form.vat_number %}
+  </fieldset>
+  <fieldset><legend>Abholung</legend>
+    {% include "includes/field.html" with field=form.pickup_same_as_address %}
+    <div class="form-grid">{% include "includes/field.html" with field=form.pickup_street %}{% include "includes/field.html" with field=form.pickup_zip_code %}{% include "includes/field.html" with field=form.pickup_city %}</div>
+    {% include "includes/field.html" with field=form.opening_hours %}
+  </fieldset>
+  {% if can_edit %}<button type="submit">Speichern</button>{% endif %}
+</form>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Kunden{% endblock %}
+{% block content %}
+<h1>Kunden</h1>
+<form class="filters" method="get"><input type="search" name="q" value="{{ q }}" placeholder="Name oder E-Mail" aria-label="Suche"><button type="submit" class="secondary">Suchen</button></form>
+<div class="table-wrap"><table>
+  <thead><tr><th>Name</th><th>Art</th><th>Ort</th><th>Registriert</th><th>Status</th><th></th></tr></thead>
+  <tbody>{% for org in page %}
+    <tr id="org-{{ org.pk }}"><td>{{ org.name }}</td><td>{{ org.customer_profile.get_customer_type_display }}</td><td>{{ org.customer_profile.billing_city }}</td>
+      <td>{{ org.created_at|date:"d.m.Y" }}</td><td><span class="badge {{ org.status }}">{{ org.get_status_display }}</span></td>
+      <td>{% if "platform.suppliers.manage" in org_perms and not org.member_count %}{% include "imports/partials/invite_form.html" %}{% endif %}{% if "platform.suppliers.manage" in org_perms %}<form method="post" action="{% url 'operator:set_status' org.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+        {% if org.status == "blocked" %}<button name="action" value="unblock" class="secondary" type="submit">Entsperren</button>{% else %}<button name="action" value="block" class="danger" type="submit" data-confirm="{{ org.name }} sperren?">Sperren</button>{% endif %}</form>{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="6" class="muted">Keine Kunden gefunden.</td></tr>{% endfor %}</tbody>
+</table></div>
+{% include "includes/pagination.html" %}
+{% endblock %}

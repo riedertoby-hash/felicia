@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Daueraufträge{% endblock %}
+{% block content %}
+<div class="spread"><h1>Daueraufträge Ihrer Kunden</h1><a class="small" href="{% url 'supplier_orders:list' %}">← Bestellungen</a></div>
+<p class="muted small">Zur Planung: Diese Bestellungen werden kurz vor dem Bestellschluss automatisch ausgelöst und erscheinen dann wie gewohnt unter Bestellungen.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Kunde</th><th>Rhythmus</th><th>Nächste Termine</th><th>Artikel</th></tr></thead>
+  <tbody>{% for s in standing_orders %}
+    <tr><td>{{ s.customer.name }}</td><td class="small">{{ s.get_interval_weeks_display }}<br>{{ s.weekday_label }} · {{ s.option.name }}</td>
+      <td class="small">{% for d in s.next_dates %}{% if d.skipped %}<s>{{ d.date|date:"d.m." }}</s>{% else %}{{ d.date|date:"d.m." }}{% endif %}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
+      <td class="small">{% for i in s.items.all %}{{ i.quantity|floatformat:"-2" }} {{ i.variant.unit }} {{ i.variant.product.name }} {{ i.variant.name }}<br>{% endfor %}</td></tr>
+  {% empty %}<tr><td colspan="4" class="muted">Keine aktiven Daueraufträge.</td></tr>{% endfor %}</tbody>
+</table></div>
+{% endblock %}

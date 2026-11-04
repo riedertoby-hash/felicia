@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}{{ s }}{% endblock %}
+{% block content %}
+<div class="spread"><h1>{{ s }}{% if not s.is_active %} <span class="badge">beendet</span>{% endif %}</h1><a class="small" href="{% url 'orders:standing_list' %}">← Daueraufträge</a></div>
+<p class="muted">{{ s.supplier.name }} · {{ s.option.name }} · {{ s.get_interval_weeks_display }} am {{ s.weekday_label }}{% if s.address %} · {{ s.address.street }}, {{ s.address.zip_code }} {{ s.address.city }}{% endif %}</p>
+{% if s.last_error %}<div class="msg error">Letzte Lieferung ({{ s.last_generated_date|date:"d.m.Y" }}) nicht bestellt: {{ s.last_error }}</div>{% endif %}
+<div class="grid two">
+  <form method="post" class="card">{% csrf_token %}
+    <h2>Artikel</h2>
+    <table class="compact"><tbody>{% for i in items %}
+      <tr><td>{{ i.variant.product.name }} <span class="small muted">{{ i.variant.name }}</span>{% if not i.variant.is_active or not i.variant.product.is_active %} <span class="badge blocked">nicht erhältlich</span>{% endif %}</td>
+        <td class="qty-form"><input type="number" name="qty_{{ i.pk }}" value="{{ i.quantity|floatformat:'-2' }}" min="0" step="{{ i.variant.qty_step|floatformat:'-2' }}" aria-label="Menge {{ i.variant.product.name }}"> <span class="small muted">{{ i.variant.unit }}</span></td>
+        <td class="small right">CHF {{ i.variant.customer_price }}</td></tr>
+    {% empty %}<tr><td class="muted">Keine Artikel.</td></tr>{% endfor %}</tbody></table>
+    <p class="small muted">Menge 0 entfernt den Artikel.</p>
+    <button type="submit" name="action" value="quantities" class="secondary">Mengen speichern</button>
+  </form>
+  <div class="card">
+    <h2>Nächste Lieferungen</h2>
+    <ul class="plain">{% for d in next_dates %}
+      <li class="spread"><span>{% if d.skipped %}<s>{{ d.date|date:"l, d.m.Y" }}</s> <span class="small muted">ausgelassen</span>{% else %}{{ d.date|date:"l, d.m.Y" }}{% endif %}</span>
+        {% if s.is_active and not s.paused_until or s.is_active and d.date > s.paused_until %}<form method="post">{% csrf_token %}<input type="hidden" name="date" value="{{ d.date|date:'Y-m-d' }}">{% if d.date|date:"Y-m-d" in s.skipped_dates %}<button type="submit" name="action" value="unskip" class="ghost small">Doch liefern</button>{% else %}<button type="submit" name="action" value="skip" class="ghost small">Auslassen</button>{% endif %}</form>{% endif %}</li>
+    {% empty %}<li class="muted">Keine weiteren Termine.</li>{% endfor %}</ul>
+  </div>
+</div>
+<div class="card mt">
+  <h2>Pause &amp; Ende</h2>
+  <form method="post" class="row">{% csrf_token %}
+    <label for="paused_until">Pausieren bis</label>
+    <input id="paused_until" type="date" name="paused_until" value="{{ s.paused_until|date:'Y-m-d' }}">
+    <button type="submit" name="action" value="pause" class="secondary">{% if s.paused_until %}Ändern{% else %}Pausieren{% endif %}</button>
+  </form>
+  <div class="actions mt">
+    {% if s.is_active %}<form method="post" data-confirm="Dauerauftrag beenden?">{% csrf_token %}<button type="submit" name="action" value="end" class="danger">Dauerauftrag beenden</button></form>
+    {% else %}<form method="post">{% csrf_token %}<button type="submit" name="action" value="resume">Wieder aktivieren</button></form>{% endif %}
+  </div>
+</div>
+{% endblock %}

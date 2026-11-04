@@ -1,0 +1,47 @@
+{% load static %}<!doctype html>
+<html lang="de-CH">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="htmx-config" content='{"includeIndicatorStyles": false, "allowEval": false}'>
+  <title>{% block title %}{% endblock %}{% if request.tenant %} · {{ request.tenant.name }}{% endif %}</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <script src="{% static 'js/htmx.min.js' %}" defer></script>
+  <script src="{% static 'js/app.js' %}" defer></script>
+  {% block extra_head %}{% endblock %}
+</head>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="{% url 'home' %}">{{ request.tenant.name|default:"Felicia" }}</a>
+      {% if user.is_authenticated %}
+        {% if user_memberships|length > 1 %}
+          <form class="org-switch" method="post" action="{% url 'orgs:switch' %}">{% csrf_token %}
+            <label class="sr-only" for="org-switch">Organisation</label>
+            <select id="org-switch" name="organization" data-autosubmit>
+              {% for m in user_memberships %}
+                <option value="{{ m.organization_id }}" {% if m.organization_id == current_org.pk %}selected{% endif %}>{{ m.organization.name }} ({{ m.organization.get_kind_display }})</option>
+              {% endfor %}
+            </select>
+            <noscript><button class="secondary" type="submit">Wechseln</button></noscript>
+          </form>
+        {% elif current_org %}
+          <span class="small muted org-name">{{ current_org.name }}</span>
+        {% endif %}
+        {% if current_org.kind == "customer" and "shop.order" in org_perms %}{% include "orders/partials/cart_badge.html" %}{% endif %}
+        <a class="small" href="{% url 'account_security' %}">{{ user.first_name|default:user.email }}</a>
+        <form method="post" action="{% url 'account_logout' %}">{% csrf_token %}<button class="ghost small" type="submit">Abmelden</button></form>
+      {% else %}
+        <a href="{% url 'account_login' %}">Anmelden</a>
+        <a class="btn" href="{% url 'account_signup' %}">Registrieren</a>
+      {% endif %}
+    </div>
+    {% if user.is_authenticated and current_org %}{% include "includes/nav.html" %}{% endif %}
+  </header>
+  <main class="{% block main_class %}{% endblock %}">
+    {% include "includes/messages.html" %}
+    {% block content %}{% endblock %}
+  </main>
+  {% block extra_body %}{% endblock %}
+</body>
+</html>

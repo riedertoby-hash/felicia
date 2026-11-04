@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Willkommen{% endblock %}
+{% block content %}
+<section class="hero">
+  <h1>Regionale Produkte direkt vom Hof bestellen</h1>
+  <p class="muted">Produzenten aus der Region und Betriebe, die frisch einkaufen wollen – auf einer Plattform.</p>
+  <div class="actions">
+    <a class="btn" href="{% url 'account_signup' %}">Jetzt registrieren</a>
+    <a class="btn secondary" href="{% url 'account_login' %}">Anmelden</a>
+  </div>
+</section>
+<div class="grid">
+  <div class="card"><h2>Für Betriebe</h2><p class="muted">Gastronomie, Handel und Kantinen bestellen bei mehreren Produzenten in einem Warenkorb.</p></div>
+  <div class="card"><h2>Für Produzenten</h2><p class="muted">Eigene Preise, Lieferzonen und Konditionen festlegen. Bestellungen kommen sauber aufbereitet an.</p></div>
+  <div class="card"><h2>Sicher und in der Schweiz</h2><p class="muted">Daten liegen in der Schweiz. Zwei-Faktor-Anmeldung und klare Rechte pro Mitarbeiter.</p></div>
+</div>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Lieferanten{% endblock %}
+{% block content %}
+<div class="spread"><h1>Unsere Lieferanten</h1><a class="small" href="{% url 'shop:index' %}">← Shop</a></div>
+<div class="grid">
+{% for s in suppliers %}
+  <a class="card link" href="{% url 'shop:supplier' s.pk %}">
+    {% if s.supplier_profile.logo %}<img class="logo" src="{{ s.supplier_profile.logo.url }}" alt="">{% endif %}
+    <h2>{{ s.name }}</h2>
+    <p class="small muted">{{ s.supplier_profile.zip_code }} {{ s.supplier_profile.city }} · {{ s.product_count }} Artikel</p>
+    {% if s.supplier_profile.description %}<p class="small">{{ s.supplier_profile.description|truncatewords:25 }}</p>{% endif %}
+  </a>
+{% empty %}<p class="muted">Noch keine Lieferanten.</p>{% endfor %}
+</div>
+{% endblock %}

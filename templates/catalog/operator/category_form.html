@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Kategorie{% endblock %}
+{% block content %}
+<div class="spread"><h1>{% if category.pk %}{{ category.name }}{% else %}Neue Kategorie{% endif %}</h1><a class="small" href="{% url 'catalog_admin:taxonomy' %}">← Zurück</a></div>
+<form method="post" novalidate class="card w-sm">{% csrf_token %}
+  {% include "includes/form_fields.html" %}
+  <button type="submit">Speichern</button>
+</form>
+{% if category.pk %}
+<form method="post" action="{% url 'catalog_admin:category_delete' category.pk %}" class="mt" data-confirm="Kategorie löschen?">{% csrf_token %}<button type="submit" class="danger">Löschen</button></form>
+{% endif %}
+{% endblock %}

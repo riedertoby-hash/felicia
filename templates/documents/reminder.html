@@ -1,0 +1,24 @@
+{% extends "documents/base.html" %}
+{% block title %}{{ invoice.reminder_label }} {{ invoice.number }}{% endblock %}
+{% block body %}
+{% with i=invoice.issuer_snapshot r=invoice.recipient_snapshot %}
+<div class="head"><div class="from"><strong>{{ i.name }}</strong><br>{{ i.street }}<br>{{ i.zip }} {{ i.city }}{% if i.email %}<br>{{ i.email }}{% endif %}</div></div>
+<div class="to">{{ r.name }}<br>{{ r.street }}<br>{{ r.zip }} {{ r.city }}</div>
+<h1>{% if reminder.level == 1 %}Zahlungserinnerung{% elif reminder.level == 2 %}1. Mahnung{% else %}2. Mahnung{% endif %}</h1>
+<p>{{ reminder.sent_on|date:"d.m.Y" }}</p>
+<p>Guten Tag</p>
+<p>{% if reminder.level == 1 %}Sicher ist es Ihnen entgangen: Unsere Rechnung ist noch offen. Wir bitten Sie, den Betrag in den nächsten 10 Tagen zu überweisen.{% else %}Trotz unserer Erinnerung ist die folgende Rechnung noch nicht bezahlt. Bitte überweisen Sie den offenen Betrag innert 10 Tagen.{% endif %}</p>
+<table class="lines">
+  <thead><tr><th>Rechnung</th><th>Datum</th><th>Fällig seit</th><th class="r">Betrag CHF</th></tr></thead>
+  <tbody>
+    <tr><td>{{ invoice.number }}</td><td>{{ invoice.issue_date|date:"d.m.Y" }}</td><td>{{ invoice.due_date|date:"d.m.Y" }}</td><td class="r">{{ invoice.total }}</td></tr>
+    {% if invoice.fees_total %}<tr><td colspan="3">Mahngebühren</td><td class="r">{{ invoice.fees_total }}</td></tr>{% endif %}
+    {% if invoice.paid_amount %}<tr><td colspan="3">Bereits bezahlt</td><td class="r">−{{ invoice.paid_amount }}</td></tr>{% endif %}
+    <tr class="total"><td colspan="3">Offener Betrag</td><td class="r">{{ reminder.amount_due }}</td></tr>
+  </tbody>
+</table>
+<p class="mt">Falls Sie bereits bezahlt haben, betrachten Sie dieses Schreiben bitte als gegenstandslos.</p>
+<p>Freundliche Grüsse<br>{{ i.name }}</p>
+{% if qr_svg %}<div class="qr-page"><p class="small muted">Zahlteil</p><div class="qr">{{ qr_svg|safe }}</div></div>{% endif %}
+{% endwith %}
+{% endblock %}

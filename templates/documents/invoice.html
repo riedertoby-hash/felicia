@@ -1,0 +1,30 @@
+{% extends "documents/base.html" %}
+{% block title %}Rechnung {{ invoice.number }}{% endblock %}
+{% block body %}
+{% with i=invoice.issuer_snapshot r=invoice.recipient_snapshot %}
+<div class="head">
+  <div class="from"><strong>{{ i.name }}</strong><br>{{ i.street }}<br>{{ i.zip }} {{ i.city }}{% if i.email %}<br>{{ i.email }}{% endif %}{% if i.phone %}<br>{{ i.phone }}{% endif %}{% if i.vat_number %}<br>{{ i.vat_number }}{% endif %}</div>
+</div>
+<div class="to">{{ r.name }}<br>{{ r.street }}<br>{{ r.zip }} {{ r.city }}</div>
+<h1>{% if invoice.kind == "commission" %}Provisionsrechnung{% else %}Rechnung{% endif %} {{ invoice.number }}{% if invoice.status == "cancelled" %} – STORNIERT{% endif %}</h1>
+<table class="meta"><tr><td>Rechnungsdatum</td><td>{{ invoice.issue_date|date:"d.m.Y" }}</td></tr>
+  <tr><td>Zahlbar bis</td><td><strong>{{ invoice.due_date|date:"d.m.Y" }}</strong></td></tr>
+  {% if invoice.period_start %}<tr><td>Periode</td><td>{{ invoice.period_start|date:"d.m.Y" }} – {{ invoice.period_end|date:"d.m.Y" }}</td></tr>{% endif %}
+  <tr><td>Referenz</td><td>{{ invoice.reference }}</td></tr></table>
+<table class="lines">
+  <thead><tr><th>Beschreibung</th><th class="r">Menge</th><th class="r">Preis</th>{% if i.vat_registered %}<th class="r">MWST</th>{% endif %}<th class="r">Betrag CHF</th></tr></thead>
+  <tbody>
+  {% for l in lines %}
+    {% if l.quantity == 0 and l.total == 0 %}<tr class="group"><td colspan="{% if i.vat_registered %}5{% else %}4{% endif %}">{{ l.description }}</td></tr>
+    {% else %}<tr><td>{{ l.description }}</td><td class="r">{% if l.unit %}{{ l.quantity|floatformat:"-2" }} {{ l.unit }}{% endif %}</td><td class="r">{% if l.unit %}{{ l.unit_price }}{% endif %}</td>{% if i.vat_registered %}<td class="r">{{ l.vat_rate }} %</td>{% endif %}<td class="r">{{ l.total }}</td></tr>{% endif %}
+  {% endfor %}
+  {% for rate, base, vat in invoice.vat_breakdown %}<tr class="sum"><td colspan="{% if i.vat_registered %}4{% else %}3{% endif %}" class="r muted">MWST {{ rate }} % auf CHF {{ base }} (im Betrag enthalten)</td><td class="r muted">{{ vat }}</td></tr>{% endfor %}
+  <tr class="total"><td colspan="{% if i.vat_registered %}4{% else %}3{% endif %}">Total CHF</td><td class="r">{{ invoice.total }}</td></tr>
+  </tbody>
+</table>
+{% if not i.vat_registered %}<p class="small muted">Nicht MWST-pflichtig.</p>{% endif %}
+{% if invoice.footer %}<p>{{ invoice.footer|linebreaksbr }}</p>{% endif %}
+{% if qr_svg %}<div class="qr-page"><p class="small muted">Zahlteil – bitte mit der Banking-App scannen.</p><div class="qr">{{ qr_svg|safe }}</div></div>
+{% else %}<p class="small"><strong>Hinweis:</strong> Für diese Rechnung fehlt die IBAN des Rechnungsstellers – kein QR-Zahlteil.</p>{% endif %}
+{% endwith %}
+{% endblock %}

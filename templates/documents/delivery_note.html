@@ -1,0 +1,18 @@
+{% extends "documents/base.html" %}
+{% block title %}Lieferschein{% endblock %}
+{% block body %}
+{% for o in orders %}
+<div class="page">
+  {% with p=o.supplier.supplier_profile %}
+  <div class="from"><strong>{{ o.supplier.name }}</strong><br>{{ p.street }}, {{ p.zip_code }} {{ p.city }}{% if p.phone %} · {{ p.phone }}{% endif %}</div>
+  {% endwith %}
+  <div class="to">{% if o.is_pickup %}<strong>{{ o.customer.name }}</strong><br>Abholung{% else %}{{ o.ship_name }}<br>{{ o.ship_street }}<br>{{ o.ship_zip }} {{ o.ship_city }}{% if o.ship_notes %}<br><em>{{ o.ship_notes }}</em>{% endif %}{% endif %}</div>
+  <h1>Lieferschein {{ o.number }}</h1>
+  <table class="meta"><tr><td>Kunde</td><td>{{ o.customer.name }}</td></tr><tr><td>Termin</td><td><strong>{{ o.delivery_date|date:"l, d.m.Y" }}</strong> · {{ o.delivery_name }}</td></tr><tr><td>Bestellt</td><td>{{ o.created_at|date:"d.m.Y H:i" }}</td></tr></table>
+  <table class="lines"><thead><tr><th>✓</th><th>Menge</th><th>Artikel</th><th>Art.-Nr.</th><th>Lagerung</th></tr></thead>
+    <tbody>{% for l in o.lines.all %}<tr><td><span class="check"></span></td><td><strong>{{ l.quantity|floatformat:"-2" }} {{ l.unit }}</strong></td><td>{{ l.product_name }} {{ l.variant_name }}</td><td class="small">{{ l.sku }}</td><td class="small">{% if l.temperature == "frozen" %}tiefgekühlt{% elif l.temperature == "chilled" %}gekühlt{% endif %}</td></tr>{% endfor %}</tbody></table>
+  {% if o.customer_note %}<p><strong>Bemerkung:</strong> {{ o.customer_note }}</p>{% endif %}
+  <div class="sign"><div>Ware erhalten (Datum, Unterschrift)</div><div>Bemerkungen</div></div>
+</div>
+{% empty %}<p>Keine Bestellungen.</p>{% endfor %}
+{% endblock %}

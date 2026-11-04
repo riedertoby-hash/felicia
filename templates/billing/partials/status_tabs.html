@@ -1,0 +1,6 @@
+<nav class="tabs" aria-label="Status">
+  <a href="?" class="{% if not status %}active{% endif %}">Alle</a>
+  <a href="?status=offen" class="{% if status == 'offen' %}active{% endif %}">Offen</a>
+  <a href="?status=ueberfaellig" class="{% if status == 'ueberfaellig' %}active{% endif %}">Überfällig</a>
+  <a href="?status=bezahlt" class="{% if status == 'bezahlt' %}active{% endif %}">Bezahlt</a>
+</nav>

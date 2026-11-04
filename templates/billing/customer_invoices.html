@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Rechnungen{% endblock %}
+{% block content %}
+<h1>Rechnungen</h1>
+<div class="card w-sm"><div class="muted small">Offen</div><div class="stat">CHF {{ open_total }}</div></div>
+<div class="mt">{% include "billing/partials/status_tabs.html" %}</div>
+{% include "billing/partials/invoice_rows.html" with party_label="Lieferant" detail_url="billing:customer_invoice" %}
+{% endblock %}

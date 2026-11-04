@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Sicherheit{% endblock %}
+{% block content %}
+<h1>Konto &amp; Sicherheit</h1>
+{% if mfa_required and not has_totp and not passkey_count %}<div class="msg warning">Für Ihre Rolle ist die Zwei-Faktor-Anmeldung Pflicht.</div>{% endif %}
+<div class="grid">
+  <a class="card link" href="{% url 'mfa_index' %}">
+    <h2>Zwei-Faktor-Anmeldung</h2>
+    {% if has_totp or passkey_count %}<span class="badge ok">Aktiv</span>{% else %}<span class="badge pending">Nicht eingerichtet</span>{% endif %}
+    <p class="muted small mt-s">Authenticator-App{% if has_totp %} ✓{% endif %} · Passkeys: {{ passkey_count }}</p>
+  </a>
+  <a class="card link" href="{% url 'account_change_password' %}"><h2>Passwort</h2><p class="muted small">Passwort ändern</p></a>
+  <a class="card link" href="{% url 'account_email' %}"><h2>E-Mail</h2><p class="muted small">{{ user.email }}</p></a>
+  <a class="card link" href="{% url 'usersessions_list' %}"><h2>Angemeldete Geräte</h2><p class="muted small">{{ session_count }} aktive Sitzung{{ session_count|pluralize:"en" }}</p></a>
+</div>
+{% endblock %}

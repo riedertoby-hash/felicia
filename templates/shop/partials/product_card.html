@@ -1,0 +1,18 @@
+<article class="product-card">
+  <a href="{% url 'shop:product' p.pk %}" class="product-img">{% if p.thumbnail %}<img src="{{ p.thumbnail.url }}" alt="" loading="lazy" width="400" height="300">{% else %}<span class="noimg">{{ p.name|slice:":1" }}</span>{% endif %}</a>
+  <div class="product-body">
+    <h3><a href="{% url 'shop:product' p.pk %}">{{ p.name }}</a></h3>
+    <p class="small muted"><a href="{% url 'shop:supplier' p.supplier_id %}">{{ p.supplier.name }}</a>{% if p.origin %} · {{ p.origin }}{% endif %}</p>
+    <div class="tags">
+      {% if p.temperature != "ambient" %}<span class="badge temp-{{ p.temperature }}">{{ p.get_temperature_display }}</span>{% endif %}
+      {% for l in p.labels.all %}<span class="badge ok">{{ l.name }}</span>{% endfor %}
+      {% if not p.in_season %}<span class="badge pending">ausser Saison</span>{% endif %}
+    </div>
+    <ul class="variants">{% for v in p.variants.all %}
+      <li><span>{{ v.name }}</span><strong>CHF {{ v.customer_price }}</strong></li>
+      {% if p.variants.all|length == 1 %}<li class="card-add">{% include "orders/partials/add_form.html" %}</li>{% endif %}
+    {% endfor %}</ul>
+    {% if p.variants.all|length > 1 and "shop.order" in org_perms and current_org.kind == "customer" %}<a class="btn secondary small" href="{% url 'shop:product' p.pk %}">Variante wählen</a>{% endif %}
+    <p class="small muted">Bestellen bis {{ p.lead_time_days }} Tag{{ p.lead_time_days|pluralize:"e" }} vor Lieferung</p>
+  </div>
+</article>

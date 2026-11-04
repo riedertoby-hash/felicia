@@ -1,0 +1,7 @@
+<div class="table-wrap mt"><table>
+  <thead><tr><th>Artikel</th><th>Menge</th><th>Preis</th><th>Total</th></tr></thead>
+  <tbody>{% for l in lines %}<tr><td>{{ l.product_name }} <span class="small muted">{{ l.variant_name }}{% if l.sku %} · {{ l.sku }}{% endif %}</span></td><td>{{ l.quantity|floatformat:"-2" }} {{ l.unit }}</td><td>CHF {{ l.unit_price }}</td><td>CHF {{ l.line_total }}</td></tr>{% endfor %}
+  {% if order.delivery_fee %}<tr><td colspan="3">Lieferung</td><td>CHF {{ order.delivery_fee }}</td></tr>{% endif %}
+  <tr><td colspan="3"><strong>Total</strong></td><td><strong>CHF {{ order.total }}</strong></td></tr></tbody>
+</table></div>
+{% if order.customer_note %}<p class="mt"><strong>Bemerkung:</strong> {{ order.customer_note }}</p>{% endif %}

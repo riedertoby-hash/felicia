@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Einstellungen{% endblock %}
+{% block content %}
+<h1>Einstellungen</h1>
+<div class="grid">
+  {% for i in items %}<a class="card link" href="{{ i.url }}"><h2>{{ i.title }}</h2><p class="muted small">{{ i.text }}</p></a>{% endfor %}
+</div>
+{% endblock %}

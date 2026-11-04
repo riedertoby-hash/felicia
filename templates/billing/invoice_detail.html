@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Rechnung {{ invoice.number }}{% endblock %}
+{% block content %}
+<div class="spread"><h1>Rechnung {{ invoice.number }} {% if invoice.is_overdue %}<span class="badge blocked">überfällig</span>{% else %}<span class="badge inv-{{ invoice.status }}">{{ invoice.get_status_display }}</span>{% endif %}</h1>
+  <a class="btn" href="{% url 'billing:pdf' invoice.pk %}" target="_blank">PDF</a></div>
+<div class="grid">
+  <div class="card"><h2>{% if side == "issuer" %}An{% else %}Von{% endif %}</h2>{% with p=invoice.recipient_snapshot %}{% if side == "issuer" %}<p>{{ p.name }}<br>{{ p.street }}<br>{{ p.zip }} {{ p.city }}</p>{% endif %}{% endwith %}{% with p=invoice.issuer_snapshot %}{% if side != "issuer" %}<p>{{ p.name }}<br>{{ p.street }}<br>{{ p.zip }} {{ p.city }}</p>{% endif %}{% endwith %}</div>
+  <div class="card"><p>Datum {{ invoice.issue_date|date:"d.m.Y" }}<br>Zahlbar bis <strong>{{ invoice.due_date|date:"d.m.Y" }}</strong>{% if invoice.paid_at %}<br>Bezahlt am {{ invoice.paid_at|date:"d.m.Y" }}{% endif %}</p><p class="stat">CHF {{ invoice.total }}</p>
+    {% if invoice.fees_total or invoice.paid_amount %}<p class="small">{% if invoice.fees_total %}Mahngebühren CHF {{ invoice.fees_total }}<br>{% endif %}{% if invoice.paid_amount %}Bezahlt CHF {{ invoice.paid_amount }}<br>{% endif %}<strong>Offen CHF {{ invoice.amount_due }}</strong></p>{% endif %}</div>
+</div>
+<div class="table-wrap mt"><table>
+  <thead><tr><th>Beschreibung</th><th>Menge</th><th>Preis</th><th>Betrag</th></tr></thead>
+  <tbody>{% for l in lines %}{% if l.quantity == 0 and l.total == 0 %}<tr class="group-row"><td colspan="4"><strong>{{ l.description }}</strong></td></tr>{% else %}<tr><td>{{ l.description }}</td><td>{% if l.unit %}{{ l.quantity|floatformat:"-2" }} {{ l.unit }}{% endif %}</td><td>{% if l.unit %}{{ l.unit_price }}{% endif %}</td><td>CHF {{ l.total }}</td></tr>{% endif %}{% endfor %}
+  {% for rate, base, vat in invoice.vat_breakdown %}<tr><td colspan="3" class="small muted">MWST {{ rate }} % auf CHF {{ base }}</td><td class="small muted">CHF {{ vat }}</td></tr>{% endfor %}
+  <tr><td colspan="3"><strong>Total</strong></td><td><strong>CHF {{ invoice.total }}</strong></td></tr></tbody>
+</table></div>
+{% if invoice.reminders.all %}
+<div class="card mt"><h2>Mahnungen</h2><ul class="plain">{% for r in invoice.reminders.all %}<li class="spread"><span>{{ r.sent_on|date:"d.m.Y" }} · {% if r.level == 1 %}Zahlungserinnerung{% elif r.level == 2 %}1. Mahnung{% else %}2. Mahnung{% endif %}{% if r.fee %} · Gebühr CHF {{ r.fee }}{% endif %}{% if r.manual %} · manuell{% endif %}</span><a class="btn ghost small" href="{% url 'billing:reminder_pdf' r.pk %}" target="_blank">PDF</a></li>{% endfor %}</ul></div>
+{% endif %}
+{% if can_manage and invoice.status != "cancelled" %}
+<div class="actions mt">
+  <form method="post" action="{% url 'billing:paid' invoice.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><input type="hidden" name="paid" value="{% if invoice.status == 'paid' %}0{% else %}1{% endif %}"><button type="submit">{% if invoice.status == "paid" %}Wieder als offen markieren{% else %}Als bezahlt markieren{% endif %}</button></form>
+  {% if invoice.status == "open" and invoice.reminder_level < 3 %}<form method="post" action="{% url 'billing:remind' invoice.pk %}" data-confirm="{% if invoice.reminder_level == 0 %}Zahlungserinnerung{% elif invoice.reminder_level == 1 %}1. Mahnung{% else %}2. Mahnung{% endif %} jetzt an {{ invoice.recipient.name }} senden?">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button type="submit" class="secondary">{% if invoice.reminder_level == 0 %}Zahlungserinnerung senden{% elif invoice.reminder_level == 1 %}1. Mahnung senden{% else %}2. Mahnung senden{% endif %}</button></form>{% endif %}
+  {% if invoice.status == "open" %}<form method="post" action="{% url 'billing:cancel' invoice.pk %}" data-confirm="Rechnung {{ invoice.number }} stornieren? Die Bestellungen werden wieder verrechenbar.">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button type="submit" class="danger">Stornieren</button></form>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

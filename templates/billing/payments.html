@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Zahlungen{% endblock %}
+{% block content %}
+<div class="spread"><h1>Zahlungseingänge</h1><a class="small" href="{% if current_org.kind == 'operator' %}{% url 'billing:operator_invoices' %}{% else %}{% url 'billing:supplier_invoices' %}{% endif %}">← Rechnungen</a></div>
+<form method="post" enctype="multipart/form-data" class="card w-md">{% csrf_token %}
+  <h2>Bankdatei einlesen</h2>
+  <p class="small muted">Im E-Banking die Gutschriften als <strong>camt.054</strong> (oder Kontoauszug camt.053) herunterladen und hier hochladen. Zahlungen mit QR-Referenz werden automatisch der Rechnung zugeordnet und als bezahlt markiert. Dieselbe Datei zweimal einlesen schadet nicht.</p>
+  <div class="field"><label for="file">Datei (.xml)</label><input id="file" type="file" name="file" accept=".xml,application/xml,text/xml" required></div>
+  <button type="submit">Einlesen</button>
+</form>
+{% if results %}
+<div class="card mt"><h2>Ergebnis</h2>
+  <ul class="plain">{% for p in results %}<li class="spread"><span>CHF {{ p.amount }} · {{ p.debtor|default:"–" }}{% if p.invoice %} → Rechnung {{ p.invoice.number }}{% endif %}</span><span class="badge pay-{{ p.status }}">{{ p.get_status_display }}</span></li>{% endfor %}</ul>
+</div>
+{% endif %}
+<div class="spread mt">
+  <nav class="tabs" aria-label="Status">
+    <a href="?" class="{% if not status %}active{% endif %}">Alle</a>
+    <a href="?status=unmatched" class="{% if status == 'unmatched' %}active{% endif %}">Nicht zugeordnet{% if unmatched_count %} <span class="count">{{ unmatched_count }}</span>{% endif %}</a>
+    <a href="?status=partial" class="{% if status == 'partial' %}active{% endif %}">Teilzahlungen</a>
+  </nav>
+</div>
+<div class="table-wrap mt-s"><table>
+  <thead><tr><th>Datum</th><th>Betrag</th><th>Von</th><th>Referenz</th><th>Status</th><th>Rechnung</th></tr></thead>
+  <tbody>{% for p in page %}
+    <tr><td>{{ p.booked_on|date:"d.m.Y" }}</td><td>CHF {{ p.amount }}</td><td class="small">{{ p.debtor }}</td><td class="small">{{ p.reference|default:"–" }}</td>
+      <td><span class="badge pay-{{ p.status }}">{{ p.get_status_display }}</span></td>
+      <td>{% if p.invoice %}{{ p.invoice.number }} · {{ p.invoice.recipient.name }}{% elif p.status == "unmatched" and open_invoices %}
+        <form method="post" action="{% url 'billing:payment_assign' p.pk %}" class="row">{% csrf_token %}
+          <select name="invoice" aria-label="Rechnung wählen">{% for inv in open_invoices %}<option value="{{ inv.pk }}">{{ inv.number }} · {{ inv.recipient.name }} · CHF {{ inv.amount_due }}</option>{% endfor %}</select>
+          <button type="submit" class="secondary small">Zuordnen</button></form>{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="6" class="muted">Noch keine Zahlungen eingelesen.</td></tr>{% endfor %}</tbody>
+</table></div>
+{% include "includes/pagination.html" %}
+{% endblock %}

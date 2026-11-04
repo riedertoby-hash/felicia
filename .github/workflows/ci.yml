@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: felicia
+          POSTGRES_USER: felicia
+          POSTGRES_PASSWORD: felicia
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U felicia" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DJANGO_DEBUG: "1"
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      PWNED_PASSWORDS_CHECK: "0"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: System libraries for PDF generation
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libpango-1.0-0 libpangoft2-1.0-0 fonts-dejavu-core
+      - name: App database role without superuser rights (so row-level security is tested)
+        run: |
+          PGPASSWORD=felicia psql -h localhost -U felicia -d felicia -c \
+            "CREATE ROLE app LOGIN PASSWORD 'app' CREATEDB NOSUPERUSER NOBYPASSRLS;"
+      - run: pip install -r requirements-dev.txt
+      - name: Lint
+        run: ruff check . && ruff format --check .
+      - name: Migrations up to date
+        run: python manage.py makemigrations --check --dry-run
+      - name: Tests
+        run: pytest
+      - name: Dependency audit
+        run: pip-audit -r requirements.txt
+      - name: Production settings check
+        env:
+          DJANGO_DEBUG: "0"
+          DJANGO_SECRET_KEY: ci-only-not-secret-ci-only-not-secret-ci-only-not-secret-1234
+          DJANGO_ALLOWED_HOSTS: example.ch
+          FIELD_ENCRYPTION_KEYS: 2LdNzt9Ks_9Y8hBzjbN8wl8W0r3uQTOZ8gbAgbYQqH0=
+        run: python manage.py check --deploy --database default --fail-level WARNING

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Einstellungen{% endblock %}
+{% block content %}
+<h1>Marktplatz-Einstellungen</h1>
+<form method="post" novalidate class="card w-md">{% csrf_token %}
+  {{ form.non_field_errors }}
+  <fieldset><legend>Geld</legend>
+    {% include "includes/field.html" with field=form.default_commission_percent %}
+    {% include "includes/field.html" with field=form.base_fee_enabled %}
+    {% include "includes/field.html" with field=form.base_fee_monthly %}
+    <p class="small muted">Abweichende Werte pro Lieferant setzen Sie beim jeweiligen Lieferanten.</p>
+  </fieldset>
+  <fieldset><legend>Zugang &amp; Sicherheit</legend>
+    {% include "includes/field.html" with field=form.supplier_approval_required %}
+    {% include "includes/field.html" with field=form.mfa_required_roles %}
+  </fieldset>
+  <fieldset><legend>Kontakt</legend>{% include "includes/field.html" with field=form.contact_email %}</fieldset>
+  <button type="submit">Speichern</button>
+</form>
+{% endblock %}

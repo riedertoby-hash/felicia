@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Protokoll{% endblock %}
+{% block content %}
+<h1>Protokoll</h1>
+<p class="muted small">Alle sicherheits- und geschäftsrelevanten Änderungen. Einträge können nicht verändert oder gelöscht werden.</p>
+<form class="filters" method="get">
+  <input type="search" name="q" value="{{ q }}" placeholder="Person, Organisation" aria-label="Suche">
+  <select name="action" data-autosubmit aria-label="Ereignis"><option value="">Alle Ereignisse</option>{% for k, l in actions %}<option value="{{ k }}" {% if k == action %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+  <button type="submit" class="secondary">Filtern</button>
+</form>
+{% with events=page %}{% include "operator/partials/events.html" %}{% endwith %}
+{% include "includes/pagination.html" %}
+{% endblock %}

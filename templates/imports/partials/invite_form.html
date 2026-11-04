@@ -1,0 +1,6 @@
+<form method="post" action="{% url 'imports:invite_org' org.pk %}" class="row">{% csrf_token %}
+  <input type="hidden" name="next" value="{{ request.get_full_path }}">
+  <label class="sr-only" for="invite-{{ org.pk }}">E-Mail</label>
+  <input id="invite-{{ org.pk }}" type="email" name="email" required placeholder="E-Mail des Inhabers" value="{% if org.kind == 'supplier' %}{{ org.supplier_profile.contact_email }}{% else %}{{ org.customer_profile.billing_email }}{% endif %}">
+  <button type="submit" class="secondary small">Einladen</button>
+</form>

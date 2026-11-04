@@ -1,0 +1,4 @@
+{% extends "base.html" %}
+{% block title %}Seite nicht gefunden{% endblock %}
+{% block main_class %}narrow{% endblock %}
+{% block content %}<div class="card"><h1>Seite nicht gefunden</h1><p>Diese Seite gibt es nicht (mehr).</p>{% if exception and "404" == "403" %}<p class="muted">{{ exception }}</p>{% endif %}<a class="btn secondary" href="/">Zur Startseite</a></div>{% endblock %}

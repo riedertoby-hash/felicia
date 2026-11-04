@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}{% if product.pk %}{{ product.name }}{% else %}Neuer Artikel{% endif %}{% endblock %}
+{% block content %}
+<div class="spread"><h1>{% if product.pk %}{{ product.name }}{% else %}Neuer Artikel{% endif %}</h1><a class="small" href="{% url 'catalog:list' %}">← Alle Artikel</a></div>
+{% if not can_edit %}<div class="msg warning">Nur ansehen – Ihre Rolle erlaubt keine Änderungen.</div>{% endif %}
+<form method="post" enctype="multipart/form-data" novalidate data-commission="{{ commission }}">{% csrf_token %}
+  {{ form.non_field_errors }}
+  <div class="card stack">
+    <div class="form-grid">
+      {% include "includes/field.html" with field=form.name %}
+      {% include "includes/field.html" with field=form.category %}
+    </div>
+    {% include "includes/field.html" with field=form.description %}
+    <div class="form-grid">
+      {% include "includes/field.html" with field=form.origin %}
+      {% include "includes/field.html" with field=form.shelf_life_days %}
+      {% include "includes/field.html" with field=form.lead_time_days %}
+    </div>
+    {% include "includes/field.html" with field=form.temperature %}
+  </div>
+
+  <div class="card mt">
+    <div class="spread"><h2>Varianten &amp; Preise</h2><span class="small muted">Provision {{ commission|floatformat:"-2" }} % · Kundenpreis wird auf 5 Rappen gerundet</span></div>
+    <p class="small muted">Tippen Sie entweder den <strong>Kundenpreis</strong> oder den Betrag, den <strong>Sie erhalten</strong> – das andere Feld rechnet automatisch mit.</p>
+    {{ formset.management_form }}
+    {{ formset.non_form_errors }}
+    <div id="variants" class="stack">
+      {% for vf in formset %}{% include "catalog/partials/variant_form.html" with vf=vf %}{% endfor %}
+    </div>
+    {% if can_edit and can_prices %}
+    <template id="variant-template">{% include "catalog/partials/variant_form.html" with vf=formset.empty_form %}</template>
+    <button type="button" class="secondary mt" data-add-variant>+ Variante hinzufügen</button>
+    {% endif %}
+  </div>
+
+  <details class="card mt" {% if form.labels.errors or form.allergens.errors or product.allergens or product.available_months %}open{% endif %}>
+    <summary><strong>Labels, Allergene, Saison</strong> <span class="small muted">(optional)</span></summary>
+    <div class="mt">
+      {% include "includes/field.html" with field=form.labels %}
+      {% include "includes/field.html" with field=form.allergens %}
+      {% include "includes/field.html" with field=form.available_months %}
+    </div>
+  </details>
+
+  <div class="card mt">
+    {% if product.thumbnail %}<img class="thumb" src="{{ product.thumbnail.url }}" alt="">{% endif %}
+    {% include "includes/field.html" with field=form.image %}
+    {% include "includes/field.html" with field=form.is_active %}
+  </div>
+
+  {% if can_edit %}
+  <div class="actions mt">
+    <button type="submit">Speichern</button>
+    <button type="submit" name="save_new" value="1" class="secondary">Speichern &amp; nächsten erfassen</button>
+  </div>
+  {% endif %}
+</form>
+{% if product.pk and can_edit %}
+<form method="post" action="{% url 'catalog:delete' product.pk %}" class="mt" data-confirm="«{{ product.name }}» endgültig löschen?">{% csrf_token %}<button type="submit" class="danger">Artikel löschen</button></form>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,8 @@
+{% autoescape off %}Tagesübersicht für {{ supplier.name }}
+
+{{ orders|length }} neue Bestellung{{ orders|length|pluralize:"en" }}:
+{% for o in orders %}
+{{ o.number }} · {{ o.customer.name }} · {{ o.delivery_name }} am {{ o.delivery_date|date:"D j.n." }} · CHF {{ o.total }}{% endfor %}
+
+Die Kommissionierliste ist als PDF angehängt.
+{% endautoescape %}
