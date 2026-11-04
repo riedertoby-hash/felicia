@@ -79,6 +79,9 @@ ACTION_LABELS = {
     "invoice.cancelled": "Rechnung storniert",
     "billing.settings": "Rechnungseinstellungen geändert",
     "import.done": "Daten importiert",
+    "invoice.reminder": "Mahnung versendet",
+    "payments.imported": "Bankdatei eingelesen",
+    "payments.assigned": "Zahlung zugeordnet",
     "address.saved": "Adresse gespeichert",
     "address.deleted": "Adresse gelöscht",
 }

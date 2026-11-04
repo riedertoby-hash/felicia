@@ -12,4 +12,10 @@ class Command(BaseCommand):
         commissions = []
         for tenant in Tenant.objects.filter(is_active=True):
             commissions += services.run_commission_invoicing(tenant)
-        self.stdout.write(f"{len(invoices)} Kundenrechnungen, {len(commissions)} Provisionsrechnungen erstellt.")
+        from apps.billing.dunning import run_reminders
+
+        reminders = run_reminders()
+        self.stdout.write(
+            f"{len(invoices)} Kundenrechnungen, {len(commissions)} Provisionsrechnungen erstellt, "
+            f"{len(reminders)} Mahnungen versendet."
+        )

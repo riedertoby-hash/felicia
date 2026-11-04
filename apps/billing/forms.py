@@ -8,8 +8,24 @@ from .models import BillingSettings, CustomerTerms
 class BillingSettingsForm(forms.ModelForm):
     class Meta:
         model = BillingSettings
-        fields = ["invoice_mode", "payment_terms_days", "footer"]
-        widgets = {"invoice_mode": forms.RadioSelect, "footer": forms.Textarea(attrs={"rows": 3})}
+        fields = [
+            "invoice_mode",
+            "payment_terms_days",
+            "footer",
+            "reminders_enabled",
+            "first_reminder_days",
+            "reminder_interval_days",
+            "max_reminder_level",
+            "reminder_fee",
+        ]
+        widgets = {
+            "invoice_mode": forms.RadioSelect,
+            "footer": forms.Textarea(attrs={"rows": 3}),
+            "first_reminder_days": forms.NumberInput(attrs={"data-show-if": "s-reminders_enabled=on"}),
+            "reminder_interval_days": forms.NumberInput(attrs={"data-show-if": "s-reminders_enabled=on"}),
+            "max_reminder_level": forms.NumberInput(attrs={"data-show-if": "s-reminders_enabled=on"}),
+            "reminder_fee": forms.NumberInput(attrs={"data-show-if": "s-reminders_enabled=on"}),
+        }
 
 
 class CustomerTermsForm(forms.ModelForm):

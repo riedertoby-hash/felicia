@@ -1,5 +1,5 @@
 from django.contrib import messages
-from django.core.exceptions import ValidationError
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.paginator import Paginator
 from django.db.models import Count, Max, Q, Sum
 from django.http import HttpResponse
@@ -286,3 +286,112 @@ def operator_issuer(request):
         messages.success(request, "Rechnungsdaten gespeichert.")
         return redirect("billing:operator_invoices")
     return render(request, "billing/operator_issuer.html", {"form": form, "settings": obj})
+
+
+# --- Dunning & payments --------------------------------------------------------------------------
+
+
+@require_POST
+@org_required("finance.manage")
+def invoice_remind(request, pk):
+    from .dunning import send_reminder
+
+    invoice = get_object_or_404(Invoice, pk=pk, issuer=request.org)
+    try:
+        reminder = send_reminder(invoice, request=request, manual=True)
+        messages.success(request, f"{invoice.REMINDER_LABELS[reminder.level]} an {invoice.recipient.name} gesendet.")
+    except ValidationError as exc:
+        messages.error(request, exc.messages[0])
+    next_url = request.POST.get("next", "")
+    return redirect(next_url if next_url.startswith("/") else "/")
+
+
+@org_required("finance.view")
+def reminder_pdf_view(request, pk):
+    from .dunning import reminder_pdf
+    from .models import Reminder
+
+    reminder = get_object_or_404(
+        Reminder.objects.select_related("invoice"),
+        Q(invoice__issuer=request.org) | Q(invoice__recipient=request.org),
+        pk=pk,
+    )
+    response = HttpResponse(reminder_pdf(reminder), content_type="application/pdf")
+    response["Content-Disposition"] = f'inline; filename="Mahnung-{reminder.invoice.number}-{reminder.level}.pdf"'
+    return response
+
+
+def _payments_kind(request):
+    if request.org.kind == "operator":
+        return request.membership.has_perm("platform.terms")
+    return request.org.kind == "supplier" and request.membership.has_perm("finance.manage")
+
+
+@org_required()
+def payments(request):
+    from . import camt
+    from .models import Payment
+
+    if not _payments_kind(request):
+        raise PermissionDenied("Ihre Rolle erlaubt diese Aktion nicht.")
+    results = None
+    if request.method == "POST" and request.FILES.get("file"):
+        try:
+            entries = camt.parse(request.FILES["file"].read())
+            results = camt.apply(entries, organization=request.org, request=request)
+            if not results:
+                messages.info(request, "Keine neuen Zahlungen in dieser Datei (bereits eingelesen?).")
+        except camt.CamtError as exc:
+            messages.error(request, str(exc))
+    qs = Payment.objects.filter(organization=request.org).select_related("invoice__recipient")
+    status = request.GET.get("status", "")
+    if status in Payment.Status.values:
+        qs = qs.filter(status=status)
+    page = Paginator(qs, 50).get_page(request.GET.get("page"))
+    open_invoices = (
+        Invoice.objects.filter(issuer=request.org, status="open")
+        .select_related("recipient")
+        .order_by("recipient__name", "number")
+    )
+    return render(
+        request,
+        "billing/payments.html",
+        {
+            "page": page,
+            "status": status,
+            "statuses": Payment.Status.choices,
+            "results": results,
+            "open_invoices": open_invoices,
+            "unmatched_count": Payment.objects.filter(organization=request.org, status="unmatched").count(),
+        },
+    )
+
+
+@require_POST
+@org_required()
+def payment_assign(request, pk):
+    from .models import Payment
+
+    if not _payments_kind(request):
+        raise PermissionDenied("Ihre Rolle erlaubt diese Aktion nicht.")
+    payment = get_object_or_404(Payment, pk=pk, organization=request.org, status="unmatched")
+    invoice = get_object_or_404(Invoice, pk=request.POST.get("invoice") or 0, issuer=request.org, status="open")
+    invoice.paid_amount += payment.amount
+    due = invoice.total + invoice.fees_total
+    if invoice.paid_amount >= due:
+        invoice.status, invoice.paid_at = Invoice.Status.PAID, payment.booked_on
+        payment.status = Payment.Status.MATCHED if invoice.paid_amount == due else Payment.Status.OVERPAID
+    else:
+        payment.status = Payment.Status.PARTIAL
+    invoice.save(update_fields=["paid_amount", "status", "paid_at", "updated_at"])
+    payment.invoice = invoice
+    payment.save(update_fields=["invoice", "status", "updated_at"])
+    log(
+        "payments.assigned",
+        request=request,
+        organization=request.org,
+        target=invoice,
+        changes={"betrag": str(payment.amount), "status": payment.status},
+    )
+    messages.success(request, f"Zahlung CHF {payment.amount} der Rechnung {invoice.number} zugeordnet.")
+    return redirect("billing:payments")

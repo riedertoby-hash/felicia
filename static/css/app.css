@@ -274,3 +274,7 @@ tr.group-row td { background: var(--bg); }
 .choices label span { display: block; }
 .qty-form { flex-wrap: nowrap; }
 .qty-form input[type=number] { width: 90px !important; flex: 0 0 90px; }
+.badge.pay-matched { background: var(--ok-soft); color: var(--brand); }
+.badge.pay-partial, .badge.pay-overpaid { background: var(--warn-soft); color: var(--warn); }
+.badge.pay-unmatched { background: var(--danger-soft); color: var(--danger); }
+.badge.pay-duplicate { background: var(--line); color: var(--muted); }

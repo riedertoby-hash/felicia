@@ -10,3 +10,4 @@ gunicorn==26.2.0
 weasyprint==70.0
 qrbill==1.2.0
 openpyxl==3.1.5
+defusedxml==0.7.1

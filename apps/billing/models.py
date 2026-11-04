@@ -27,6 +27,23 @@ class BillingSettings(TimeStampedModel):
         "Zahlungsfrist (Tage)", default=30, validators=[MaxValueValidator(120)]
     )
     footer = models.TextField("Text auf der Rechnung", blank=True, help_text="z.B. Dank, Hinweise")
+    # Dunning
+    reminders_enabled = models.BooleanField("Zahlungserinnerungen automatisch senden", default=True)
+    first_reminder_days = models.PositiveSmallIntegerField(
+        "Erinnerung nach … Tagen Verzug", default=7, validators=[MaxValueValidator(90)]
+    )
+    reminder_interval_days = models.PositiveSmallIntegerField(
+        "Weitere Mahnung alle … Tage", default=14, validators=[MaxValueValidator(90)]
+    )
+    max_reminder_level = models.PositiveSmallIntegerField(
+        "Höchste Mahnstufe",
+        default=3,
+        validators=[MaxValueValidator(3)],
+        help_text="1 = nur Erinnerung, 2 = plus 1. Mahnung, 3 = plus 2. Mahnung",
+    )
+    reminder_fee = models.DecimalField(
+        "Mahngebühr ab 1. Mahnung (CHF)", max_digits=6, decimal_places=2, default=Decimal("0")
+    )
 
     class Meta:
         verbose_name = "Rechnungseinstellungen"
@@ -84,6 +101,10 @@ class Invoice(TenantModel):
     issuer_snapshot = models.JSONField(default=dict)
     recipient_snapshot = models.JSONField(default=dict)
     footer = models.TextField(blank=True)
+    reminder_level = models.PositiveSmallIntegerField(default=0)
+    last_reminder_on = models.DateField(null=True, blank=True)
+    fees_total = models.DecimalField(**MONEY, default=Decimal("0"))
+    paid_amount = models.DecimalField(**MONEY, default=Decimal("0"))
 
     class Meta:
         ordering = ["-issue_date", "-pk"]
@@ -112,6 +133,17 @@ class Invoice(TenantModel):
     def net_total(self):
         return self.total - self.vat_total
 
+    @property
+    def amount_due(self):
+        """Still to pay: total plus dunning fees minus what has been received."""
+        return max(Decimal("0"), self.total + self.fees_total - self.paid_amount)
+
+    REMINDER_LABELS = {1: "Zahlungserinnerung", 2: "1. Mahnung", 3: "2. Mahnung"}
+
+    @property
+    def reminder_label(self):
+        return self.REMINDER_LABELS.get(self.reminder_level, "")
+
 
 class InvoiceLine(models.Model):
     invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name="lines")
@@ -129,3 +161,46 @@ class InvoiceLine(models.Model):
 
     def __str__(self):
         return self.description
+
+
+class Reminder(models.Model):
+    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name="reminders")
+    level = models.PositiveSmallIntegerField()
+    sent_on = models.DateField(default=timezone.localdate)
+    fee = models.DecimalField(**MONEY, default=Decimal("0"))
+    amount_due = models.DecimalField(**MONEY)
+    manual = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["level"]
+
+    def __str__(self):
+        return f"{Invoice.REMINDER_LABELS.get(self.level)} {self.invoice.number}"
+
+
+class Payment(TimeStampedModel):
+    """A payment received for an organization, e.g. from a bank file (camt.054)."""
+
+    class Status(models.TextChoices):
+        MATCHED = "matched", "Zugeordnet"
+        PARTIAL = "partial", "Teilzahlung"
+        OVERPAID = "overpaid", "Zu viel bezahlt"
+        UNMATCHED = "unmatched", "Nicht zugeordnet"
+        DUPLICATE = "duplicate", "Schon bezahlt"
+
+    organization = models.ForeignKey("orgs.Organization", on_delete=models.CASCADE, related_name="payments")
+    invoice = models.ForeignKey(Invoice, null=True, blank=True, on_delete=models.SET_NULL, related_name="payments")
+    amount = models.DecimalField(**MONEY)
+    currency = models.CharField(max_length=3, default="CHF")
+    reference = models.CharField(max_length=35, blank=True)
+    booked_on = models.DateField()
+    debtor = models.CharField(max_length=140, blank=True)
+    bank_id = models.CharField("Bank-Referenz", max_length=100)
+    status = models.CharField(max_length=16, choices=Status.choices)
+
+    class Meta:
+        ordering = ["-booked_on", "-pk"]
+        constraints = [models.UniqueConstraint(fields=["organization", "bank_id"], name="payment_unique_bank_id")]
+
+    def __str__(self):
+        return f"{self.amount} {self.reference}"

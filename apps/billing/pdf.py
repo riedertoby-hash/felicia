@@ -14,7 +14,7 @@ def render_pdf(template, context):
     return weasyprint.HTML(string=html, base_url=str(settings.BASE_DIR)).write_pdf()
 
 
-def qr_bill_svg(invoice):
+def qr_bill_svg(invoice, amount=None, info=None):
     """Swiss QR-bill payment part as inline SVG, or None if creditor data is incomplete."""
     from qrbill import QRBill
 
@@ -38,9 +38,9 @@ def qr_bill_svg(invoice):
             }
             if recipient.get("city")
             else None,
-            amount=f"{invoice.total:.2f}",
+            amount=f"{(invoice.total if amount is None else amount):.2f}",
             reference_number=invoice.reference,
-            additional_information=f"Rechnung {invoice.number}",
+            additional_information=info or f"Rechnung {invoice.number}",
             language="de",
         )
         buf = io.StringIO()

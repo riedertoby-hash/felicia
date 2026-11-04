@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Rechnungen{% endblock %}
 {% block content %}
-<div class="spread"><h1>Rechnungen</h1>{% if can_manage %}<a class="btn secondary" href="{% url 'billing:supplier_settings' %}">Einstellungen</a>{% endif %}</div>
+<div class="spread"><h1>Rechnungen</h1>{% if can_manage %}<div class="row"><a class="btn" href="{% url 'billing:payments' %}">Zahlungen einlesen</a><a class="btn secondary" href="{% url 'billing:supplier_settings' %}">Einstellungen</a></div>{% endif %}</div>
 <div class="grid">
   <div class="card"><div class="muted small">Offen</div><div class="stat">CHF {{ open_total }}</div></div>
   <div class="card"><div class="muted small">Davon überfällig</div><div class="stat">CHF {{ overdue_total }}</div></div>

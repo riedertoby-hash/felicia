@@ -10,6 +10,8 @@ from contextlib import contextmanager
 from django.db import connection
 
 PROTECTED_TABLES = [
+    "billing_reminder",
+    "billing_payment",
     "orders_order",
     "orders_orderline",
     "orders_cartitem",

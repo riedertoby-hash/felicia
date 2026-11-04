@@ -19,4 +19,8 @@ urlpatterns = [
     path("rechnung/<int:pk>.pdf", views.invoice_pdf_view, name="pdf"),
     path("rechnung/<int:pk>/bezahlt/", views.invoice_paid, name="paid"),
     path("rechnung/<int:pk>/stornieren/", views.invoice_cancel, name="cancel"),
+    path("rechnung/<int:pk>/mahnen/", views.invoice_remind, name="remind"),
+    path("mahnung/<int:pk>.pdf", views.reminder_pdf_view, name="reminder_pdf"),
+    path("zahlungen/", views.payments, name="payments"),
+    path("zahlungen/<int:pk>/zuordnen/", views.payment_assign, name="payment_assign"),
 ]

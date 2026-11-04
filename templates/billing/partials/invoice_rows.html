@@ -4,8 +4,8 @@
     <tr><td><a href="{% url detail_url inv.pk %}">{{ inv.number }}</a></td>
       <td>{% if party_label == "Lieferant" %}{{ inv.issuer.name }}{% else %}{{ inv.recipient.name }}{% endif %}</td>
       <td>{{ inv.issue_date|date:"d.m.Y" }}</td><td>{{ inv.due_date|date:"d.m.Y" }}</td>
-      <td>{% if inv.is_overdue %}<span class="badge blocked">überfällig</span>{% else %}<span class="badge inv-{{ inv.status }}">{{ inv.get_status_display }}</span>{% endif %}</td>
-      <td>CHF {{ inv.total }}</td>
+      <td>{% if inv.is_overdue %}<span class="badge blocked">überfällig{% if inv.reminder_level %} · {{ inv.reminder_label }}{% endif %}</span>{% else %}<span class="badge inv-{{ inv.status }}">{{ inv.get_status_display }}</span>{% endif %}</td>
+      <td>CHF {{ inv.total }}{% if inv.status == "open" and inv.amount_due != inv.total %}<br><span class="small muted">offen {{ inv.amount_due }}</span>{% endif %}</td>
       <td class="row">{% if can_manage and inv.status != "cancelled" %}<form method="post" action="{% url 'billing:paid' inv.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><input type="hidden" name="paid" value="{% if inv.status == 'paid' %}0{% else %}1{% endif %}"><button type="submit" class="secondary small">{% if inv.status == "paid" %}Wieder offen{% else %}Bezahlt{% endif %}</button></form>{% endif %}
         <a class="btn ghost small" href="{% url 'billing:pdf' inv.pk %}" target="_blank">PDF</a></td></tr>
   {% empty %}<tr><td colspan="7" class="muted">Keine Rechnungen.</td></tr>{% endfor %}</tbody>
