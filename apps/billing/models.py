@@ -44,6 +44,11 @@ class BillingSettings(TimeStampedModel):
     reminder_fee = models.DecimalField(
         "Mahngebühr ab 1. Mahnung (CHF)", max_digits=6, decimal_places=2, default=Decimal("0")
     )
+    # Accounts for the accounting export (Swiss SME chart of accounts by default)
+    account_debtors = models.CharField("Konto Debitoren", max_length=10, default="1100")
+    account_revenue = models.CharField("Konto Ertrag", max_length=10, default="3200")
+    account_bank = models.CharField("Konto Bank", max_length=10, default="1020")
+    account_fees = models.CharField("Konto Mahngebühren", max_length=10, default="3805")
 
     class Meta:
         verbose_name = "Rechnungseinstellungen"

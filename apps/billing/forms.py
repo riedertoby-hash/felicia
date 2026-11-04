@@ -17,6 +17,10 @@ class BillingSettingsForm(forms.ModelForm):
             "reminder_interval_days",
             "max_reminder_level",
             "reminder_fee",
+            "account_debtors",
+            "account_revenue",
+            "account_bank",
+            "account_fees",
         ]
         widgets = {
             "invoice_mode": forms.RadioSelect,

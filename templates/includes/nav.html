@@ -6,6 +6,7 @@
     {% if "platform.customers.view" in org_perms %}<a href="{% url 'operator:customers' %}" class="{% if '/betreiber/kunden' in p %}active{% endif %}">Kunden</a>{% endif %}
     {% if "platform.suppliers.view" in org_perms %}<a href="{% url 'operator:orders' %}" class="{% if '/betreiber/bestellungen' in p %}active{% endif %}">Bestellungen</a>{% endif %}
     {% if "platform.terms" in org_perms %}<a href="{% url 'billing:operator_invoices' %}" class="{% if '/betreiber/provisionen' in p %}active{% endif %}">Provisionen</a>{% endif %}
+    {% if "platform.terms" in org_perms %}<a href="{% url 'reports:dashboard' %}" class="{% if '/auswertung/' in p %}active{% endif %}">Auswertung</a>{% endif %}
     {% if "platform.audit" in org_perms %}<a href="{% url 'operator:audit' %}" class="{% if '/betreiber/protokoll' in p %}active{% endif %}">Protokoll</a>{% endif %}
     <a href="{% url 'shop:index' %}" class="{% if '/shop/' in p %}active{% endif %}">Shop</a>
   {% elif current_org.kind == "supplier" %}
@@ -13,7 +14,8 @@
     {% if "orders.view" in org_perms %}<a href="{% url 'supplier_orders:list' %}" class="{% if '/lieferant/bestellungen' in p %}active{% endif %}">Bestellungen</a>{% endif %}
     {% if "catalog.view" in org_perms %}<a href="{% url 'catalog:list' %}" class="{% if '/lieferant/artikel' in p %}active{% endif %}">Artikel</a>{% endif %}
     {% if "finance.view" in org_perms %}<a href="{% url 'billing:supplier_invoices' %}" class="{% if '/lieferant/rechnungen' in p and not settings_active %}active{% endif %}">Rechnungen</a>
-    <a href="{% url 'billing:supplier_customers' %}" class="{% if '/lieferant/kunden' in p %}active{% endif %}">Kunden</a>{% endif %}
+    <a href="{% url 'billing:supplier_customers' %}" class="{% if '/lieferant/kunden' in p %}active{% endif %}">Kunden</a>
+    <a href="{% url 'reports:dashboard' %}" class="{% if '/auswertung/' in p %}active{% endif %}">Auswertung</a>{% endif %}
   {% elif current_org.kind == "customer" %}
     <a href="{% url 'shop:index' %}" class="{% if '/shop/' in p %}active{% endif %}">Shop</a>
     {% if "shop.order" in org_perms %}<a href="{% url 'orders:list' %}" class="{% if '/kunde/bestellungen' in p %}active{% endif %}">Bestellungen</a>{% endif %}

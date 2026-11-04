@@ -278,3 +278,7 @@ tr.group-row td { background: var(--bg); }
 .badge.pay-partial, .badge.pay-overpaid { background: var(--warn-soft); color: var(--warn); }
 .badge.pay-unmatched { background: var(--danger-soft); color: var(--danger); }
 .badge.pay-duplicate { background: var(--line); color: var(--muted); }
+.chart { width: 100%; height: 200px; display: block; }
+.chart .bar { fill: var(--brand); }
+.chart .bar:hover { fill: #3f8a4c; }
+.chart .bar-label { font-size: 12px; fill: var(--muted); text-anchor: middle; }

@@ -27,6 +27,8 @@ urlpatterns = [
     path("betreiber/katalog/", include("apps.catalog.operator_urls")),
     path("betreiber/import/", include("apps.imports.urls")),
     path("shop/", include("apps.shop.urls")),
+    path("auswertung/", include("apps.reports.urls")),
+    path("api/", include("apps.api.urls")),
     path("kunde/", include("apps.customers.urls")),
     path("system/", admin.site.urls),
 ]

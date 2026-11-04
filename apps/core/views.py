@@ -39,6 +39,7 @@ SETTINGS_PREFIXES = (
     "/betreiber/katalog",
     "/betreiber/rechnungsdaten",
     "/betreiber/import",
+    "/api/schluessel",
 )
 
 
@@ -73,6 +74,7 @@ def settings_hub(request):
             "billing:supplier_settings",
         )
         add("org.bank", "Bankverbindung", "IBAN für den QR-Zahlteil Ihrer Rechnungen", "suppliers:bank")
+        add("org.edit", "Schnittstelle (API)", "Anbindung Ihrer Warenwirtschaft", "api:keys")
     elif org is not None and org.kind == "customer":
         add("org.edit", "Profil & Rechnungsadresse", "Name, Rechnungsadresse, Kontakt", "customers:profile")
         add("customer.addresses", "Lieferadressen", "Wohin geliefert wird", "customers:addresses")

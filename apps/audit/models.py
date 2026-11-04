@@ -82,6 +82,8 @@ ACTION_LABELS = {
     "invoice.reminder": "Mahnung versendet",
     "payments.imported": "Bankdatei eingelesen",
     "payments.assigned": "Zahlung zugeordnet",
+    "api.key_created": "API-Schlüssel erstellt",
+    "api.key_revoked": "API-Schlüssel widerrufen",
     "address.saved": "Adresse gespeichert",
     "address.deleted": "Adresse gelöscht",
 }
